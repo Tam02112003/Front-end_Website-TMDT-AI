@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Typography, Grid, Card, CardMedia, CardContent, CircularProgress, Alert, Box, Button, CardActions, TextField, InputAdornment, Snackbar } from '@mui/material';
-import api from '../services/api';
+import { Typography, Grid, Card, CardMedia, CardContent, CircularProgress, Alert, Box, Button, CardActions, TextField, InputAdornment, Snackbar, Chip, Container, Paper } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../models';
 import ProductService from '../services/ProductService';
-import CartService from '../services/CartService'; // Import CartService
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+import CartService from '../services/CartService';
+import { useAuth } from '../context/AuthContext';
+import { Search, ShoppingCart, Visibility, AutoAwesome, FilterList } from '@mui/icons-material';
 
 const ProductsPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth(); // Get isLoggedIn from useAuth
+  const { isLoggedIn } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await ProductService.getAllProducts(searchQuery); // Use ProductService and pass search query
+        const response = await ProductService.getAllProducts(searchQuery);
         setProducts(response.data);
         setError(null);
       } catch (err) {
@@ -33,12 +33,12 @@ const ProductsPage = () => {
 
     const handler = setTimeout(() => {
       fetchProducts();
-    }, 400); // Debounce search input
+    }, 400);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [searchQuery]); // Re-run effect when searchQuery changes
+  }, [searchQuery]);
 
   const handleAddToCart = async (product: Product) => {
     if (!isLoggedIn) {
@@ -46,7 +46,7 @@ const ProductsPage = () => {
       return;
     }
     try {
-      await CartService.addToCart(product.id, 1); // Add 1 quantity by default
+      await CartService.addToCart(product.id, 1);
       setFeedback({ open: true, message: 'Added to cart successfully!', severity: 'success' });
     } catch (err) {
       setFeedback({ open: true, message: 'Failed to add to cart.', severity: 'error' });
@@ -62,80 +62,223 @@ const ProductsPage = () => {
     setFeedback(null);
   };
 
-
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>
+      </Container>
+    );
   }
 
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>
-        Our Products
-      </Typography>
-      <TextField
-        label="Search Products"
-        variant="outlined"
-        fullWidth
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        sx={{ mb: 3 }}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              {loading && <CircularProgress size={20} />}
-            </InputAdornment>
-          ),
-        }}
-      />
-      <Grid container spacing={4}>
-        {products.map((product) => (
-          <Grid item key={product.id} xs={12} sm={6} md={4}>
-            <Card sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              '&:hover': {
-                boxShadow: 6,
-              },
-            }}>
-              <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <CardMedia
-                  component="img"
-                  sx={{ height: 250 }}
-                  image={product.image_url || 'https://via.placeholder.com/250'} // Placeholder image
-                  alt={product.name}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    {product.name}
-                  </Typography>
-                  {product.discount_percent && product.final_price !== undefined ? (
-                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                      <Typography variant="h6" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography 
+          variant="h3" 
+          component="h1" 
+          gutterBottom
+          sx={{ 
+            fontWeight: 700,
+            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            mb: 2
+          }}
+        >
+          Our Products
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+          Discover our amazing collection of fashion items
+        </Typography>
+        
+        {/* Search Bar */}
+        <Paper 
+          sx={{ 
+            p: 1,
+            display: 'flex',
+            alignItems: 'center',
+            maxWidth: 600,
+            mx: 'auto',
+            borderRadius: 3,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+          }}
+        >
+          <TextField
+            placeholder="Search for products..."
+            variant="outlined"
+            fullWidth
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                border: 'none',
+                '& fieldset': { border: 'none' },
+                '&:hover fieldset': { border: 'none' },
+                '&.Mui-focused fieldset': { border: 'none' },
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search color="action" />
+                </InputAdornment>
+              ),
+              endAdornment: loading && (
+                <InputAdornment position="end">
+                  <CircularProgress size={20} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Paper>
+      </Box>
+
+      {/* Products Grid */}
+      {products.length === 0 && !loading ? (
+        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+          <Typography variant="h5" color="text.secondary" gutterBottom>
+            No products found
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Try adjusting your search terms or browse all products.
+          </Typography>
+        </Paper>
+      ) : (
+        <Grid container spacing={3}>
+          {products.map((product) => (
+            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+              <Card 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-12px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                  }
+                }}
+              >
+                <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+                  <Link to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
+                    <CardMedia
+                      component="img"
+                      sx={{ 
+                        height: 280,
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease',
+                        '&:hover': {
+                          transform: 'scale(1.05)'
+                        }
+                      }}
+                      image={product.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                      alt={product.name}
+                    />
+                  </Link>
+                  {product.discount_percent && (
+                    <Chip
+                      label={`${product.discount_percent}% OFF`}
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        fontWeight: 600,
+                        fontSize: '0.75rem'
+                      }}
+                    />
+                  )}
+                </Box>
+                
+                <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                  <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Typography 
+                      variant="h6" 
+                      component="h2" 
+                      gutterBottom
+                      sx={{ 
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {product.name}
+                    </Typography>
+                  </Link>
+                  
+                  <Box sx={{ mt: 2 }}>
+                    {product.discount_percent && product.final_price !== undefined ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ textDecoration: 'line-through' }}
+                        >
+                          ${product.price.toFixed(2)}
+                        </Typography>
+                        <Typography 
+                          variant="h6" 
+                          color="error.main" 
+                          sx={{ fontWeight: 700 }}
+                        >
+                          ${product.final_price.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography 
+                        variant="h6" 
+                        color="primary.main" 
+                        sx={{ fontWeight: 700 }}
+                      >
                         ${product.price.toFixed(2)}
                       </Typography>
-                      <Typography variant="h5" color="error">
-                        ${product.final_price.toFixed(2)}
-                      </Typography>
-                      <Typography variant="body2" color="error">
-                        ({product.discount_percent}% OFF)
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="h6" component="p" sx={{ mt: 2 }}>
-                      ${product.price.toFixed(2)}
-                    </Typography>
-                  )}
+                    )}
+                  </Box>
                 </CardContent>
-              </Link>
-              <CardActions>
-                <Button size="small" onClick={() => handleAddToCart(product)} disabled={!isLoggedIn}>Add to Cart</Button>
-                <Button size="small" onClick={() => handleTryOn(product.image_url || '')}>AI Try On</Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                
+                <CardActions sx={{ p: 3, pt: 0, gap: 1 }}>
+                  <Button 
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleAddToCart(product)} 
+                    disabled={!isLoggedIn}
+                    startIcon={<ShoppingCart />}
+                    sx={{ 
+                      flex: 1,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600
+                    }}
+                  >
+                    Add to Cart
+                  </Button>
+                  <Button 
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleTryOn(product.image_url || '')}
+                    startIcon={<AutoAwesome />}
+                    sx={{ 
+                      flex: 1,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600
+                    }}
+                  >
+                    Try On
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {feedback && (
         <Snackbar
@@ -149,7 +292,7 @@ const ProductsPage = () => {
           </Alert>
         </Snackbar>
       )}
-    </div>
+    </Container>
   );
 };
 

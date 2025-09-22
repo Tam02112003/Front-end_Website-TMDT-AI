@@ -1,7 +1,8 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Typography, Box, TextField, Button, CircularProgress, Alert, Link } from '@mui/material';
+import { Typography, Box, TextField, Button, CircularProgress, Alert, Link, Paper, Container } from '@mui/material';
 import AuthService from '../services/AuthService';
+import { AutoAwesome, PersonAdd } from '@mui/icons-material';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -37,77 +38,154 @@ const RegisterPage = () => {
   };
 
   return (
-    <Box
-      sx={{
-        marginTop: 8,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <Typography component="h1" variant="h5">
-        Sign up
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="username"
-          label="Username"
-          name="username"
-          autoComplete="username"
-          autoFocus
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="email"
-          label="Email Address"
-          name="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          name="password"
-          label="Password"
-          type="password"
-          id="password"
-          autoComplete="new-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {success && (
-          <Alert severity="success" sx={{ mt: 2 }}>
-            {success}
-          </Alert>
-        )}
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          sx={{ mt: 3, mb: 2 }}
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} /> : 'Sign Up'}
-        </Button>
-        <Link component={RouterLink} to="/login" variant="body2">
-          {"Already have an account? Sign In"}
-        </Link>
-      </Box>
-    </Box>
+    <Container maxWidth="sm" sx={{ py: 8 }}>
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: 6,
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+          border: '1px solid rgba(102, 126, 234, 0.2)'
+        }}
+      >
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <AutoAwesome 
+            sx={{ 
+              fontSize: 48, 
+              color: 'primary.main',
+              mb: 2
+            }} 
+          />
+          <Typography 
+            component="h1" 
+            variant="h4"
+            sx={{ 
+              fontWeight: 700,
+              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 1
+            }}
+          >
+            Join AI Try-On
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Create your account and start your fashion journey
+          </Typography>
+        </Box>
+
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="Username"
+            name="username"
+            autoComplete="username"
+            autoFocus
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            sx={{
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+              {success}
+            </Alert>
+          )}
+          
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : <PersonAdd />}
+            sx={{ 
+              mb: 3,
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+              }
+            }}
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </Button>
+          
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?{' '}
+              <Link 
+                component={RouterLink} 
+                to="/login" 
+                sx={{ 
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                Sign In
+              </Link>
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
