@@ -1,13 +1,15 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Avatar, Menu, MenuItem, IconButton, Badge } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Chat, ShoppingCart, AccountCircle, Store, AutoAwesome, Article, Person, ExitToApp } from '@mui/icons-material';
+import { Chat, ShoppingCart, AccountCircle, Store, AutoAwesome, Article, Person, ExitToApp, Menu as MenuIcon } from '@mui/icons-material';
 import { useState } from 'react';
+import '../styles/responsive.css';
 
 const Layout = () => {
   const { isLoggedIn, user, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -33,6 +35,10 @@ const Layout = () => {
     setAnchorEl(null);
   };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar 
@@ -42,7 +48,7 @@ const Layout = () => {
           boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" className="responsive-container">
           <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
             {/* Logo */}
             <Typography 
@@ -73,7 +79,21 @@ const Layout = () => {
               </Button>
             </Typography>
 
-            {/* Navigation Links */}
+            {/* Mobile Menu Button */}
+            <IconButton
+              color="inherit"
+              onClick={toggleMobileMenu}
+              sx={{ 
+                display: { xs: 'block', md: 'none' },
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            {/* Desktop Navigation Links */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button 
                 color="inherit" 
@@ -82,6 +102,7 @@ const Layout = () => {
                 startIcon={<Store />}
                 sx={{ 
                   textTransform: 'none',
+                  display: { xs: 'none', md: 'flex' },
                   fontWeight: 500,
                   px: 2,
                   '&:hover': {
@@ -98,6 +119,7 @@ const Layout = () => {
                 startIcon={<AutoAwesome />}
                 sx={{ 
                   textTransform: 'none',
+                  display: { xs: 'none', md: 'flex' },
                   fontWeight: 500,
                   px: 2,
                   '&:hover': {
@@ -114,6 +136,7 @@ const Layout = () => {
                 startIcon={<Article />}
                 sx={{ 
                   textTransform: 'none',
+                  display: { xs: 'none', md: 'flex' },
                   fontWeight: 500,
                   px: 2,
                   '&:hover': {
@@ -130,6 +153,7 @@ const Layout = () => {
                 startIcon={<Chat />}
                 sx={{ 
                   textTransform: 'none',
+                  display: { xs: 'none', md: 'flex' },
                   fontWeight: 500,
                   px: 2,
                   '&:hover': {
@@ -145,8 +169,10 @@ const Layout = () => {
                 color="inherit" 
                 component={Link} 
                 to="/cart"
+                className="touch-target"
                 sx={{ 
                   mx: 1,
+                  display: { xs: 'none', sm: 'flex' },
                   '&:hover': {
                     backgroundColor: 'rgba(255,255,255,0.1)'
                   }
@@ -161,6 +187,7 @@ const Layout = () => {
               {isLoggedIn ? (
                 <>
                   <IconButton
+                    className="touch-target"
                     onClick={handleMenuOpen}
                     sx={{ 
                       ml: 1,
@@ -213,6 +240,7 @@ const Layout = () => {
                   component={Link} 
                   to="/login"
                   variant="outlined"
+                  className="touch-target"
                   sx={{ 
                     ml: 2,
                     borderColor: 'rgba(255,255,255,0.5)',
@@ -230,9 +258,75 @@ const Layout = () => {
             </Box>
           </Toolbar>
         </Container>
+        
+        {/* Mobile Navigation Menu */}
+        <Box
+          sx={{
+            display: { xs: mobileMenuOpen ? 'block' : 'none', md: 'none' },
+            bgcolor: 'rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(10px)',
+            borderTop: '1px solid rgba(255,255,255,0.1)'
+          }}
+        >
+          <Container maxWidth="xl" className="responsive-container">
+            <Box sx={{ py: 2 }}>
+              <Button 
+                color="inherit" 
+                component={Link} 
+                to="/products"
+                fullWidth
+                startIcon={<Store />}
+                onClick={() => setMobileMenuOpen(false)}
+                sx={{ 
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  py: 1.5,
+                  mb: 1
+                }}
+              >
+                Products
+              </Button>
+              <Button 
+                color="inherit" 
+                component={Link} 
+                to="/try-on"
+                fullWidth
+                startIcon={<AutoAwesome />}
+                onClick={() => setMobileMenuOpen(false)}
+                sx={{ 
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  py: 1.5,
+                  mb: 1
+                }}
+              >
+                Try On
+              </Button>
+              <Button 
+                color="inherit" 
+                component={Link} 
+                to="/news"
+                fullWidth
+                startIcon={<Article />}
+                onClick={() => setMobileMenuOpen(false)}
+                sx={{ 
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  py: 1.5,
+                  mb: 1
+                }}
+              >
+                News
+              </Button>
+            </Box>
+          </Container>
+        </Box>
       </AppBar>
 
-      <Container component="main" sx={{ mt: 4, mb: 4, flexGrow: 1 }} maxWidth="xl">
+      <Container component="main" sx={{ mt: 4, mb: 4, flexGrow: 1 }} maxWidth="xl" className="responsive-container">
         <Outlet />
       </Container>
 
@@ -246,7 +340,7 @@ const Layout = () => {
           color: 'white'
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" className="responsive-container">
           <Typography variant="body1" align="center" sx={{ fontWeight: 500 }}>
             {'Copyright © '}
             <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>

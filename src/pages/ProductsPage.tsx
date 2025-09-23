@@ -6,6 +6,7 @@ import ProductService from '../services/ProductService';
 import CartService from '../services/CartService';
 import { useAuth } from '../context/AuthContext';
 import { Search, ShoppingCart, Visibility, AutoAwesome, FilterList } from '@mui/icons-material';
+import '../styles/responsive.css';
 
 const ProductsPage = () => {
   const navigate = useNavigate();
@@ -71,15 +72,16 @@ const ProductsPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 3, md: 4 } }}>
         <Typography 
           variant="h3" 
           component="h1" 
-          gutterBottom
+          className="responsive-heading-1"
           sx={{ 
             fontWeight: 700,
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
             background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
@@ -89,7 +91,7 @@ const ProductsPage = () => {
         >
           Our Products
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="h6" className="responsive-body" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '1rem', md: '1.25rem' } }}>
           Discover our amazing collection of fashion items
         </Typography>
         
@@ -99,7 +101,7 @@ const ProductsPage = () => {
             p: 1,
             display: 'flex',
             alignItems: 'center',
-            maxWidth: 600,
+            maxWidth: { xs: '100%', sm: 600 },
             mx: 'auto',
             borderRadius: 3,
             boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
@@ -137,7 +139,7 @@ const ProductsPage = () => {
 
       {/* Products Grid */}
       {products.length === 0 && !loading ? (
-        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+        <Paper sx={{ p: { xs: 4, md: 6 }, textAlign: 'center', borderRadius: 3 }}>
           <Typography variant="h5" color="text.secondary" gutterBottom>
             No products found
           </Typography>
@@ -146,9 +148,9 @@ const ProductsPage = () => {
           </Typography>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid">
           {products.map((product) => (
-            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2}>
               <Card 
                 sx={{ 
                   height: '100%', 
@@ -168,7 +170,7 @@ const ProductsPage = () => {
                     <CardMedia
                       component="img"
                       sx={{ 
-                        height: 280,
+                        height: { xs: 200, sm: 240, md: 280 },
                         objectFit: 'cover',
                         transition: 'transform 0.3s ease',
                         '&:hover': {
@@ -194,7 +196,7 @@ const ProductsPage = () => {
                   )}
                 </Box>
                 
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
                   <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Typography 
                       variant="h6" 
@@ -202,6 +204,7 @@ const ProductsPage = () => {
                       gutterBottom
                       sx={{ 
                         fontWeight: 600,
+                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
                         lineHeight: 1.3,
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -243,15 +246,17 @@ const ProductsPage = () => {
                   </Box>
                 </CardContent>
                 
-                <CardActions sx={{ p: 3, pt: 0, gap: 1 }}>
+                <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0, gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
                   <Button 
                     variant="contained"
-                    size="small"
+                    size={{ xs: 'medium', sm: 'small' }}
                     onClick={() => handleAddToCart(product)} 
                     disabled={!isLoggedIn}
                     startIcon={<ShoppingCart />}
+                    className="touch-target"
                     sx={{ 
-                      flex: 1,
+                      flex: { xs: 'none', sm: 1 },
+                      width: { xs: '100%', sm: 'auto' },
                       borderRadius: 2,
                       textTransform: 'none',
                       fontWeight: 600
@@ -261,11 +266,13 @@ const ProductsPage = () => {
                   </Button>
                   <Button 
                     variant="outlined"
-                    size="small"
+                    size={{ xs: 'medium', sm: 'small' }}
                     onClick={() => handleTryOn(product.image_url || '')}
                     startIcon={<AutoAwesome />}
+                    className="touch-target"
                     sx={{ 
-                      flex: 1,
+                      flex: { xs: 'none', sm: 1 },
+                      width: { xs: '100%', sm: 'auto' },
                       borderRadius: 2,
                       textTransform: 'none',
                       fontWeight: 600

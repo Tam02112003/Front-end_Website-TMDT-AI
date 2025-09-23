@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CartService from '../services/CartService';
 import api from '../services/api';
+import '../styles/responsive.css';
 
 interface Product {
   id: number;
@@ -96,20 +97,21 @@ const CartPage = () => {
 
   if (!isLoggedIn) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-        <Paper sx={{ p: 6, borderRadius: 3 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 8 }, textAlign: 'center' }} className="responsive-container">
+        <Paper sx={{ p: { xs: 4, md: 6 }, borderRadius: 3 }}>
           <ShoppingCart sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
             Please log in to view your cart
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" className="responsive-body" color="text.secondary" sx={{ mb: 3 }}>
             You need to be signed in to access your shopping cart.
           </Typography>
           <Button 
             variant="contained" 
             component={Link} 
             to="/login"
-            size="large"
+            size={{ xs: 'medium', sm: 'large' }}
+            className="touch-target"
             sx={{ borderRadius: 2 }}
           >
             Sign In
@@ -121,7 +123,7 @@ const CartPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }} className="responsive-container">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
           <CircularProgress size={40} />
         </Box>
@@ -131,19 +133,20 @@ const CartPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
         <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
       <Typography 
         variant="h3" 
-        gutterBottom
+        className="responsive-heading-1"
         sx={{ 
           fontWeight: 700,
+          fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
           background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
@@ -155,43 +158,45 @@ const CartPage = () => {
       </Typography>
       
       {items.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+        <Paper sx={{ p: { xs: 4, md: 6 }, textAlign: 'center', borderRadius: 3 }}>
           <ShoppingCart sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
             Your cart is empty
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" className="responsive-body" color="text.secondary" sx={{ mb: 3 }}>
             Looks like you haven't added any items to your cart yet.
           </Typography>
           <Button 
             component={Link} 
             to="/products" 
             variant="contained" 
-            size="large"
+            size={{ xs: 'medium', sm: 'large' }}
             startIcon={<ShoppingCart />}
+            className="touch-target"
             sx={{ borderRadius: 2 }}
           >
             Continue Shopping
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, md: 4 }}>
           <Grid item xs={12} lg={8}>
             <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <List sx={{ p: 0 }}>
                 {items.map((item, index) => (
                   <Box key={item.product_id}>
-                    <ListItem sx={{ p: 3 }}>
+                    <ListItem sx={{ p: { xs: 2, md: 3 }, flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                       <ListItemAvatar>
                         <Avatar 
                           variant="rounded" 
                           src={item.product_details.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=150'} 
-                          sx={{ width: 80, height: 80, mr: 2 }} 
+                          sx={{ width: { xs: 60, sm: 80 }, height: { xs: 60, sm: 80 }, mr: { xs: 0, sm: 2 }, mb: { xs: 2, sm: 0 } }} 
                         />
                       </ListItemAvatar>
                       <ListItemText
+                        sx={{ flex: 1, mb: { xs: 2, sm: 0 } }}
                         primary={
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                             {item.product_details.name}
                           </Typography>
                         }
@@ -212,27 +217,29 @@ const CartPage = () => {
                           )
                         }
                       />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexDirection: { xs: 'column', sm: 'row' }, width: { xs: '100%', sm: 'auto' } }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                           <IconButton 
-                            size="small" 
+                            size={{ xs: 'medium', sm: 'small' }}
+                            className="touch-target"
                             onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
                             sx={{ borderRadius: 0 }}
                           >
                             <Remove />
                           </IconButton>
-                          <Typography sx={{ px: 2, py: 1, minWidth: 40, textAlign: 'center', fontWeight: 600 }}>
+                          <Typography sx={{ px: { xs: 3, sm: 2 }, py: 1, minWidth: { xs: 50, sm: 40 }, textAlign: 'center', fontWeight: 600 }}>
                             {item.quantity}
                           </Typography>
                           <IconButton 
-                            size="small" 
+                            size={{ xs: 'medium', sm: 'small' }}
+                            className="touch-target"
                             onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
                             sx={{ borderRadius: 0 }}
                           >
                             <Add />
                           </IconButton>
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 700, minWidth: 80, textAlign: 'right' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, minWidth: { xs: 'auto', sm: 80 }, textAlign: { xs: 'center', sm: 'right' } }}>
                           ${((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toFixed(2)}
                         </Typography>
                         <IconButton 
@@ -240,6 +247,7 @@ const CartPage = () => {
                           aria-label="delete" 
                           onClick={() => handleRemoveItem(item.product_id)}
                           color="error"
+                          className="touch-target"
                         >
                           <Delete />
                         </IconButton>
@@ -253,14 +261,14 @@ const CartPage = () => {
           </Grid>
           
           <Grid item xs={12} lg={4}>
-            <Card sx={{ borderRadius: 3, position: 'sticky', top: 24 }}>
-              <CardContent sx={{ p: 3 }}>
+            <Card sx={{ borderRadius: 3, position: { xs: 'static', lg: 'sticky' }, top: 24 }}>
+              <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                   Order Summary
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
                   <Typography variant="body1">
                     Subtotal ({items.reduce((total, item) => total + item.quantity, 0)} items)
                   </Typography>
@@ -269,7 +277,7 @@ const CartPage = () => {
                   </Typography>
                 </Box>
                 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
                   <Typography variant="body1">Shipping</Typography>
                   <Typography variant="body1" color="success.main" sx={{ fontWeight: 600 }}>
                     Free
@@ -278,7 +286,7 @@ const CartPage = () => {
                 
                 <Divider sx={{ my: 2 }} />
                 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>Total</Typography>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>${calculateTotal()}</Typography>
                 </Box>
@@ -288,8 +296,9 @@ const CartPage = () => {
                   to="/checkout" 
                   variant="contained" 
                   fullWidth
-                  size="large"
+                  size={{ xs: 'medium', sm: 'large' }}
                   endIcon={<ArrowForward />}
+                  className="touch-target"
                   sx={{ 
                     borderRadius: 2,
                     py: 1.5,

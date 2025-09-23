@@ -5,6 +5,7 @@ import AuthService from '../services/AuthService';
 import { useAuth } from '../context/AuthContext';
 import GoogleIcon from '@mui/icons-material/Google';
 import { AutoAwesome, Login } from '@mui/icons-material';
+import '../styles/responsive.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -40,29 +41,30 @@ const LoginPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
+    <Container maxWidth="sm" sx={{ py: { xs: 4, md: 8 } }} className="responsive-container">
       <Paper 
         elevation={0}
         sx={{ 
-          p: 6,
+          p: { xs: 3, sm: 4, md: 6 },
           borderRadius: 4,
           background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
           border: '1px solid rgba(102, 126, 234, 0.2)'
         }}
       >
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 4 } }}>
           <AutoAwesome 
             sx={{ 
-              fontSize: 48, 
+              fontSize: { xs: 40, md: 48 }, 
               color: 'primary.main',
               mb: 2
             }} 
           />
           <Typography 
             component="h1" 
-            variant="h4"
+            className="responsive-heading-1"
             sx={{ 
               fontWeight: 700,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
               background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
@@ -72,7 +74,7 @@ const LoginPage = () => {
           >
             Welcome Back
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" className="responsive-body" color="text.secondary">
             Sign in to continue your fashion journey
           </Typography>
         </Box>
@@ -87,6 +89,7 @@ const LoginPage = () => {
             name="email"
             autoComplete="email"
             autoFocus
+            className="touch-target"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             sx={{
@@ -105,6 +108,7 @@ const LoginPage = () => {
             type="password"
             id="password"
             autoComplete="current-password"
+            className="touch-target"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             sx={{
@@ -116,7 +120,7 @@ const LoginPage = () => {
           />
           
           {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
               {error}
             </Alert>
           )}
@@ -125,15 +129,16 @@ const LoginPage = () => {
             type="submit"
             fullWidth
             variant="contained"
-            size="large"
+            size={{ xs: 'medium', sm: 'large' }}
             disabled={loading}
+            className="touch-target"
             startIcon={loading ? <CircularProgress size={20} /> : <Login />}
             sx={{ 
               mb: 3,
               py: 1.5,
               borderRadius: 2,
               textTransform: 'none',
-              fontSize: '1.1rem',
+              fontSize: { xs: '1rem', md: '1.1rem' },
               fontWeight: 600,
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               '&:hover': {
@@ -145,7 +150,7 @@ const LoginPage = () => {
           </Button>
           
           <Divider sx={{ my: 3 }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" className="responsive-body" color="text.secondary">
               OR
             </Typography>
           </Divider>
@@ -153,15 +158,16 @@ const LoginPage = () => {
           <Button
             fullWidth
             variant="outlined"
-            size="large"
+            size={{ xs: 'medium', sm: 'large' }}
             startIcon={<GoogleIcon />}
             onClick={handleGoogleLogin}
+            className="touch-target"
             sx={{ 
               mb: 3,
               py: 1.5,
               borderRadius: 2,
               textTransform: 'none',
-              fontSize: '1.1rem',
+              fontSize: { xs: '1rem', md: '1.1rem' },
               fontWeight: 600,
               borderColor: 'rgba(102, 126, 234, 0.3)',
               '&:hover': {
@@ -174,7 +180,7 @@ const LoginPage = () => {
           </Button>
           
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" className="responsive-body" color="text.secondary">
               Don't have an account?{' '}
               <Link 
                 component={RouterLink} 

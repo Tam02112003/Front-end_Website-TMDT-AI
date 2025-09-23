@@ -6,6 +6,7 @@ import ProductService from '../services/ProductService';
 import { useAuth } from '../context/AuthContext';
 import { Product } from '../models';
 import { TrendingUp, ShoppingBag, AutoAwesome, Visibility } from '@mui/icons-material';
+import '../styles/responsive.css';
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
@@ -54,14 +55,14 @@ const HomePage = () => {
   }, []);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
       {/* Hero Section */}
       <Box
         sx={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           borderRadius: 4,
           color: 'white',
-          p: { xs: 4, md: 8 },
+          p: { xs: 3, sm: 4, md: 6, lg: 8 },
           mb: 6,
           textAlign: 'center',
           position: 'relative',
@@ -83,10 +84,10 @@ const HomePage = () => {
           <Typography 
             variant="h2" 
             component="h1" 
-            gutterBottom
+            className="responsive-heading-1"
             sx={{ 
               fontWeight: 700,
-              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
               mb: 2
             }}
           >
@@ -95,9 +96,10 @@ const HomePage = () => {
           <Typography 
             variant="h5" 
             component="p" 
-            gutterBottom
+            className="responsive-heading-3"
             sx={{ 
               fontWeight: 300,
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
               opacity: 0.9,
               mb: 3
             }}
@@ -106,9 +108,10 @@ const HomePage = () => {
           </Typography>
           <Typography 
             variant="body1" 
+            className="responsive-body"
             paragraph
             sx={{ 
-              fontSize: '1.1rem',
+              fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
               maxWidth: 600,
               mx: 'auto',
               mb: 4,
@@ -117,21 +120,22 @@ const HomePage = () => {
           >
             Discover and try on clothes from the comfort of your home. Upload your photo and see how our collection looks on you with cutting-edge AI technology.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button 
               variant="contained" 
-              size="large"
+              size={{ xs: 'medium', sm: 'large' }}
               component={RouterLink} 
               to="/try-on"
               startIcon={<AutoAwesome />}
+              className="touch-target"
               sx={{
                 bgcolor: 'rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255,255,255,0.3)',
                 color: 'white',
-                px: 4,
+                px: { xs: 2, sm: 3, md: 4 },
                 py: 1.5,
-                fontSize: '1.1rem',
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                 '&:hover': {
                   bgcolor: 'rgba(255,255,255,0.3)',
                 }
@@ -141,16 +145,17 @@ const HomePage = () => {
             </Button>
             <Button 
               variant="outlined" 
-              size="large"
+              size={{ xs: 'medium', sm: 'large' }}
               component={RouterLink} 
               to="/products"
               startIcon={<ShoppingBag />}
+              className="touch-target"
               sx={{
                 borderColor: 'rgba(255,255,255,0.5)',
                 color: 'white',
-                px: 4,
+                px: { xs: 2, sm: 3, md: 4 },
                 py: 1.5,
-                fontSize: '1.1rem',
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                 '&:hover': {
                   borderColor: 'white',
                   bgcolor: 'rgba(255,255,255,0.1)',
@@ -165,10 +170,10 @@ const HomePage = () => {
 
       {/* Personalized Recommendations Section */}
       {isLoggedIn && (
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ mb: { xs: 4, md: 6 } }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <TrendingUp sx={{ mr: 2, color: 'primary.main' }} />
-            <Typography variant="h4" component="h2" sx={{ fontWeight: 600 }}>
+            <Typography variant="h4" component="h2" className="responsive-heading-2" sx={{ fontWeight: 600 }}>
               Your Personalized Recommendations
             </Typography>
           </Box>
@@ -179,7 +184,7 @@ const HomePage = () => {
           ) : recError ? (
             <Alert severity="error" sx={{ borderRadius: 2 }}>{recError}</Alert>
           ) : personalizedRecommendations.length === 0 ? (
-            <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+            <Paper sx={{ p: { xs: 3, md: 4 }, textAlign: 'center', borderRadius: 2 }}>
               <Typography variant="h6" color="text.secondary" gutterBottom>
                 No personalized recommendations yet
               </Typography>
@@ -191,9 +196,9 @@ const HomePage = () => {
               </Button>
             </Paper>
           ) : (
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid">
               {personalizedRecommendations.map((product) => (
-                <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+                <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2}>
                   <Card 
                     sx={{ 
                       height: '100%', 
@@ -208,11 +213,11 @@ const HomePage = () => {
                   >
                     <CardMedia
                       component="img"
-                      sx={{ height: 200, objectFit: 'cover' }}
+                      sx={{ height: { xs: 180, sm: 200 }, objectFit: 'cover' }}
                       image={product.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
                       alt={product.name}
                     />
-                    <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                    <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 } }}>
                       <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
                         {product.name}
                       </Typography>
@@ -237,13 +242,14 @@ const HomePage = () => {
                         </Typography>
                       )}
                     </CardContent>
-                    <CardActions sx={{ p: 2, pt: 0 }}>
+                    <CardActions sx={{ p: { xs: 1.5, sm: 2 }, pt: 0 }}>
                       <Button 
                         variant="contained" 
                         fullWidth
                         component={RouterLink} 
                         to={`/products/${product.id}`}
                         startIcon={<Visibility />}
+                        className="touch-target"
                       >
                         View Details
                       </Button>
@@ -260,7 +266,7 @@ const HomePage = () => {
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <ShoppingBag sx={{ mr: 2, color: 'primary.main' }} />
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 600 }}>
+          <Typography variant="h4" component="h2" className="responsive-heading-2" sx={{ fontWeight: 600 }}>
             Featured Products
           </Typography>
         </Box>
@@ -271,15 +277,15 @@ const HomePage = () => {
         ) : featuredError ? (
           <Alert severity="error" sx={{ borderRadius: 2 }}>{featuredError}</Alert>
         ) : featuredProducts.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <Paper sx={{ p: { xs: 3, md: 4 }, textAlign: 'center', borderRadius: 2 }}>
             <Typography variant="h6" color="text.secondary">
               No featured products available at the moment.
             </Typography>
           </Paper>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid">
             {featuredProducts.map((product) => (
-              <Grid item key={product.id} xs={12} sm={6} md={4}>
+              <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
                 <Card 
                   sx={{ 
                     height: '100%', 
@@ -294,11 +300,11 @@ const HomePage = () => {
                 >
                   <CardMedia
                     component="img"
-                    sx={{ height: 250, objectFit: 'cover' }}
+                    sx={{ height: { xs: 200, sm: 220, md: 250 }, objectFit: 'cover' }}
                     image={product.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
                     alt={product.name}
                   />
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                  <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
                     <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
                       {product.name}
                     </Typography>
@@ -323,13 +329,14 @@ const HomePage = () => {
                       </Typography>
                     )}
                   </CardContent>
-                  <CardActions sx={{ p: 3, pt: 0 }}>
+                  <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0 }}>
                     <Button 
                       variant="contained" 
                       fullWidth
                       component={RouterLink} 
                       to={`/products/${product.id}`}
                       startIcon={<Visibility />}
+                      className="touch-target"
                     >
                       View Details
                     </Button>
