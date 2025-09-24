@@ -60,11 +60,11 @@ const ProductRecommendation = ({ productId }: ProductRecommendationProps) => {
               <CardMedia
                 component="img"
                 sx={{ height: 140, objectFit: 'contain', pt: 2 }}
-                image={product.image_url || 'https://via.placeholder.com/150'}
+                image={product.image_urls?.[0] || 'https://via.placeholder.com/150'}
                 alt={product.name}
               />
               <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h6" component="h2">
+                <Typography gutterBottom variant="h6" component="h2" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {product.name}
                 </Typography>
                 {product.discount_percent && product.final_price !== undefined ? (

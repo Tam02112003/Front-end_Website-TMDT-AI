@@ -1,9 +1,10 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Avatar, Menu, MenuItem, IconButton, Badge } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Chat, ShoppingCart, AccountCircle, Store, AutoAwesome, Article, Person, ExitToApp, Menu as MenuIcon } from '@mui/icons-material';
+import { ShoppingCart, Store, AutoAwesome, Article, Person, ExitToApp, Menu as MenuIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import '../styles/responsive.css';
+import Chatbot from './Chatbot';
 
 const Layout = () => {
   const { isLoggedIn, user, logout } = useAuth();
@@ -145,23 +146,6 @@ const Layout = () => {
                 }}
               >
                 News
-              </Button>
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/chatbot"
-                startIcon={<Chat />}
-                sx={{ 
-                  textTransform: 'none',
-                  display: { xs: 'none', md: 'flex' },
-                  fontWeight: 500,
-                  px: 2,
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                Chatbot
               </Button>
               
               {/* Cart Button */}
@@ -329,6 +313,8 @@ const Layout = () => {
       <Container component="main" sx={{ mt: 4, mb: 4, flexGrow: 1 }} maxWidth="xl" className="responsive-container">
         <Outlet />
       </Container>
+
+      <Chatbot />
 
       <Box
         component="footer"

@@ -106,14 +106,15 @@ const CartPage = () => {
           <Typography variant="body1" className="responsive-body" color="text.secondary" sx={{ mb: 3 }}>
             You need to be signed in to access your shopping cart.
           </Typography>
-          <Button 
-            variant="contained" 
-            component={Link} 
-            to="/login"
-            size={{ xs: 'medium', sm: 'large' }}
-            className="touch-target"
-            sx={{ borderRadius: 2 }}
-          >
+            <Button 
+              variant="contained" 
+              component={Link} 
+              to="/login"
+              size="large"
+              color="primary"
+              className="touch-target"
+              sx={{ borderRadius: 2 }}
+            >
             Sign In
           </Button>
         </Paper>
@@ -170,7 +171,8 @@ const CartPage = () => {
             component={Link} 
             to="/products" 
             variant="contained" 
-            size={{ xs: 'medium', sm: 'large' }}
+            size="large"
+            color="primary"
             startIcon={<ShoppingCart />}
             className="touch-target"
             sx={{ borderRadius: 2 }}
@@ -220,7 +222,7 @@ const CartPage = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexDirection: { xs: 'column', sm: 'row' }, width: { xs: '100%', sm: 'auto' } }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                           <IconButton 
-                            size={{ xs: 'medium', sm: 'small' }}
+                            size="small"
                             className="touch-target"
                             onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
                             sx={{ borderRadius: 0 }}
@@ -231,7 +233,7 @@ const CartPage = () => {
                             {item.quantity}
                           </Typography>
                           <IconButton 
-                            size={{ xs: 'medium', sm: 'small' }}
+                            size="small"
                             className="touch-target"
                             onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
                             sx={{ borderRadius: 0 }}
@@ -296,7 +298,8 @@ const CartPage = () => {
                   to="/checkout" 
                   variant="contained" 
                   fullWidth
-                  size={{ xs: 'medium', sm: 'large' }}
+                  size="large"
+                  color="primary"
                   endIcon={<ArrowForward />}
                   className="touch-target"
                   sx={{ 

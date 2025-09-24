@@ -57,7 +57,7 @@ function App() {
           <Route path="order-confirmation" element={<OrderConfirmationPage />} />
           <Route path="order-result" element={<OrderResultPage />} />
           <Route path="orders" element={<OrderHistoryPage />} />
-          <Route path="chatbot" element={<ChatbotPage />} />
+
           <Route path="news" element={<NewsPage />} />
           <Route path="news/:newsId" element={<NewsDetailPage />} />
           <Route path="profile" element={<ProfilePage />} />

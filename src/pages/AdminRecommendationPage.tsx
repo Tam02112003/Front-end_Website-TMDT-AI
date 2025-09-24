@@ -32,6 +32,7 @@ const AdminRecommendationPage = () => {
       </Typography>
       <Button 
         variant="contained" 
+        color="primary"
         onClick={handleTrainModel} 
         disabled={trainingLoading}
       >

@@ -122,8 +122,7 @@ const HomePage = () => {
           </Typography>
           <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button 
-              variant="contained" 
-              size={{ xs: 'medium', sm: 'large' }}
+size="large"
               component={RouterLink} 
               to="/try-on"
               startIcon={<AutoAwesome />}
@@ -145,7 +144,7 @@ const HomePage = () => {
             </Button>
             <Button 
               variant="outlined" 
-              size={{ xs: 'medium', sm: 'large' }}
+              size="large"
               component={RouterLink} 
               to="/products"
               startIcon={<ShoppingBag />}
@@ -191,7 +190,7 @@ const HomePage = () => {
               <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
                 Explore some products to get started with AI-powered recommendations!
               </Typography>
-              <Button variant="contained" component={RouterLink} to="/products">
+              <Button variant="contained" color="primary" component={RouterLink} to="/products">
                 Explore Products
               </Button>
             </Paper>
@@ -214,11 +213,11 @@ const HomePage = () => {
                     <CardMedia
                       component="img"
                       sx={{ height: { xs: 180, sm: 200 }, objectFit: 'cover' }}
-                      image={product.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                      image={product.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
                       alt={product.name}
                     />
                     <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 } }}>
-                      <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
+                      <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {product.name}
                       </Typography>
                       {product.discount_percent && product.final_price !== undefined ? (
@@ -301,11 +300,11 @@ const HomePage = () => {
                   <CardMedia
                     component="img"
                     sx={{ height: { xs: 200, sm: 220, md: 250 }, objectFit: 'cover' }}
-                    image={product.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                    image={product.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
                     alt={product.name}
                   />
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
-                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {product.name}
                     </Typography>
                     {product.discount_percent && product.final_price !== undefined ? (

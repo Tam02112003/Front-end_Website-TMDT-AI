@@ -45,7 +45,7 @@ const OrderDetail = ({ order }: OrderDetailProps) => {
       {order.items && order.items.length > 0 ? (
         order.items.map((item) => (
           <Box key={item.product_id} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <img src={(isValidUrl(item.image_url) && item.image_url) || 'https://dummyimage.com/56x56/000/fff&text=No+Image'} alt={item.product_name} style={{ width: 56, height: 56, marginRight: 16, objectFit: 'cover' }} />
+            <img src={(item.image_urls && item.image_urls.length > 0 && isValidUrl(item.image_urls[0]) && item.image_urls[0]) || 'https://dummyimage.com/80x80/000/fff&text=No+Image'} alt={item.product_name} style={{ width: 80, height: 80, marginRight: 16, objectFit: 'cover', border: '1px solid #e0e0e0', borderRadius: 4 }} />
             <Box sx={{ flexGrow: 1 }}>
               <Typography>{item.product_name || `Product ID: ${item.product_id}`}</Typography>
               <Typography color="text.secondary">Quantity: {item.quantity}</Typography>

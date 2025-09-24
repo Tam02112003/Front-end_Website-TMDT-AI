@@ -13,8 +13,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Import responsive styles */
-@import './styles/responsive.css';
+
 
 a {
   font-weight: 500;

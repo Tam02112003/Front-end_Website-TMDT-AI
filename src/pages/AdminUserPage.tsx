@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, SelectChangeEvent, FormControl, InputLabel } from '@mui/material';
 import UserService from '../services/UserService';
 
 interface User {
@@ -82,7 +82,7 @@ const AdminUserPage = () => {
     });
   };
 
-  const handleRoleChange = (e: SelectChangeEvent<boolean>) => {
+  const handleRoleChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
     setCurrentUser((prevUser) => {
       if (prevUser) {
@@ -166,18 +166,20 @@ const AdminUserPage = () => {
                 value={currentUser.email}
                 onChange={handleInputChange}
               />
-              <Select
-                margin="dense"
-                name="is_admin"
-                label="Admin Role"
-                fullWidth
-                variant="standard"
-                value={currentUser.is_admin ? 'true' : 'false'}
-                onChange={handleRoleChange}
-              >
-                <MenuItem value="true">Yes</MenuItem>
-                <MenuItem value="false">No</MenuItem>
-              </Select>
+              <FormControl fullWidth variant="standard" sx={{ m: 1 }}>
+                <InputLabel id="is_admin-label">Admin Role</InputLabel>
+                <Select
+                  labelId="is_admin-label"
+                  id="is_admin"
+                  name="is_admin"
+                  value={currentUser.is_admin ? 'true' : 'false'}
+                  onChange={handleRoleChange}
+                  label="Admin Role"
+                >
+                  <MenuItem value="true">Yes</MenuItem>
+                  <MenuItem value="false">No</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
           )}
         </DialogContent>

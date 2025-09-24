@@ -21,8 +21,7 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
-  quantity: number;
-  image_url?: string;
+  image_urls?: string[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -35,7 +34,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   product_name: string;
-  image_url?: string;
+  image_urls?: string[];
 }
 
 export interface Order {

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import CommentItem from '../components/CommentItem';
 import { useParams } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Grid, Button, TextField, Snackbar, List, ListItem, ListItemText, Divider } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Grid, Button, TextField, Snackbar, List, ListItem, ListItemText, Divider, IconButton } from '@mui/material';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import CartService from '../services/CartService';
@@ -21,6 +23,9 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [addLoading, setAddLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
+
+  // Image carousel state
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Comment states
   const [comments, setComments] = useState<Comment[]>([]);
@@ -193,7 +198,17 @@ const ProductDetailPage = () => {
     setFeedback(null);
   };
 
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? (product?.image_urls?.length || 1) - 1 : prevIndex - 1
+    );
+  };
 
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === (product?.image_urls?.length || 1) - 1 ? 0 : prevIndex + 1
+    );
+  };
 
   if (loading) {
     return (
@@ -216,12 +231,65 @@ const ProductDetailPage = () => {
       <Card>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <CardMedia
-              component="img"
-              sx={{ width: '100%', height: 'auto' }}
-              image={product.image_url || 'https://via.placeholder.com/400'}
-              alt={product.name}
-            />
+            <Box sx={{ position: 'relative', width: '100%', paddingTop: '100%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
+              {product.image_urls && product.image_urls.length > 0 ? (
+                <CardMedia
+                  component="img"
+                  sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                  image={product.image_urls[currentImageIndex]}
+                  alt={product.name}
+                />
+              ) : (
+                <CardMedia
+                  component="img"
+                  sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                  image={'https://via.placeholder.com/400'}
+                  alt={product.name}
+                />
+              )}
+              {product.image_urls && product.image_urls.length > 1 && (
+                <>
+                  <IconButton
+                    sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(255,255,255,0.7)', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    onClick={handlePreviousImage}
+                    disabled={currentImageIndex === 0}
+                  >
+                    <ArrowBackIosIcon />
+                  </IconButton>
+                  <IconButton
+                    sx={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(255,255,255,0.7)', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    onClick={handleNextImage}
+                    disabled={currentImageIndex === (product.image_urls.length - 1)}
+                  >
+                    <ArrowForwardIosIcon />
+                  </IconButton>
+                </>
+              )}
+            </Box>
+            {/* Thumbnails */}
+            {product.image_urls && product.image_urls.length > 1 && (
+              <Box sx={{ display: 'flex', overflowX: 'auto', gap: 1, mt: 2, p: 1, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                {product.image_urls.map((url, index) => (
+                  <CardMedia
+                    key={index}
+                    component="img"
+                    sx={{
+                      width: '80px', 
+                      height: '80px', 
+                      objectFit: 'cover', 
+                      flexShrink: 0,
+                      cursor: 'pointer',
+                      border: index === currentImageIndex ? '2px solid primary.main' : '2px solid transparent',
+                      borderRadius: 1,
+                      '&:hover': { borderColor: 'primary.light' }
+                    }}
+                    image={url}
+                    alt={`Thumbnail ${index + 1}`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  />
+                ))}
+              </Box>
+            )}
           </Grid>
           <Grid item xs={12} md={6}>
             <CardContent>

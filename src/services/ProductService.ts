@@ -1,36 +1,10 @@
 import api from './api';
 import { Comment, CommentCreate } from '../types';
+import { Product } from '../models'; // Import Product from models.ts
 
-interface ProductCreate {
-  name: string;
-  description?: string;
-  price: number;
-  quantity: number;
-  image_url?: string;
-  is_active?: boolean;
-}
-
-interface ProductUpdate {
-  name?: string;
-  description?: string;
-  price?: number;
-  quantity?: number;
-  image_url?: string;
-  is_active?: boolean;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  description?: string;
-  price: number;
-  quantity: number;
-  image_url?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
+// Define ProductCreate and ProductUpdate based on the imported Product interface
+interface ProductCreate extends Omit<Product, 'id' | 'created_at' | 'updated_at' | 'discount_percent' | 'final_price'> {}
+interface ProductUpdate extends Partial<ProductCreate> {}
 const createProduct = (productData: ProductCreate) => {
   return api.post<Product>('/admin/products', productData);
 };

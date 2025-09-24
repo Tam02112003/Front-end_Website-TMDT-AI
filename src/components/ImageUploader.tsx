@@ -1,32 +1,56 @@
-import { useState, ChangeEvent } from 'react';
-import { Box, Button, CircularProgress, Alert, Typography } from '@mui/material';
+import { useState, ChangeEvent, useEffect } from 'react';
+import { Box, Button, CircularProgress, Alert, Typography, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import UploadService from '../services/UploadService';
 
 interface ImageUploaderProps {
-  onImageUpload: (url: string) => void;
-  initialImageUrl?: string;
+  onImageUpload: (urls: string[]) => void;
+  initialImageUrls?: string[];
 }
 
-const ImageUploader = ({ onImageUpload, initialImageUrl }: ImageUploaderProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(initialImageUrl);
+const ImageUploader = ({ onImageUpload, initialImageUrls }: ImageUploaderProps) => {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>(initialImageUrls || []);
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
+  useEffect(() => {
+    // Update uploadedUrls when initialImageUrls prop changes
+    setUploadedUrls(initialImageUrls || []);
+  }, [initialImageUrls]);
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (event.target.files) {
+      const filesArray = Array.from(event.target.files);
+      setSelectedFiles(prevFiles => [...prevFiles, ...filesArray]);
+
+      const newPreviewUrls = filesArray.map(file => URL.createObjectURL(file));
+      setPreviewUrls(prevUrls => [...prevUrls, ...newPreviewUrls]);
+
       setUploadError(null);
       setUploadSuccess(null);
     }
   };
 
+  const handleRemovePreview = (indexToRemove: number) => {
+    setSelectedFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
+    setPreviewUrls(prevUrls => {
+      URL.revokeObjectURL(prevUrls[indexToRemove]); // Clean up object URL
+      return prevUrls.filter((_, index) => index !== indexToRemove);
+    });
+  };
+
+  const handleRemoveUploaded = (urlToRemove: string) => {
+    const updatedUrls = uploadedUrls.filter(url => url !== urlToRemove);
+    setUploadedUrls(updatedUrls);
+    onImageUpload(updatedUrls); // Notify parent about the change
+  };
+
   const handleUpload = async () => {
-    if (!selectedFile) {
-      setUploadError('Please select a file first.');
+    if (selectedFiles.length === 0) {
+      setUploadError('Please select at least one file first.');
       return;
     }
 
@@ -34,20 +58,30 @@ const ImageUploader = ({ onImageUpload, initialImageUrl }: ImageUploaderProps) =
     setUploadError(null);
     setUploadSuccess(null);
 
-    try {
-      const response = await UploadService.uploadImage(selectedFile);
-      setUploadSuccess('Image uploaded successfully!');
-      onImageUpload(response.data.url);
-      // Clean up object URL after upload
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
+    const newUploadedUrls: string[] = [];
+    for (const file of selectedFiles) {
+      try {
+        const response = await UploadService.uploadImage(file);
+        newUploadedUrls.push(response.data.url);
+      } catch (err: any) {
+        setUploadError(`Upload failed for ${file.name}: ${err.response?.data?.detail || err.message}`);
+        console.error('Upload error:', err);
+        setUploading(false);
+        return; // Stop on first error
       }
-    } catch (err: any) {
-      setUploadError(`Upload failed: ${err.response?.data?.detail || err.message}`);
-      console.error('Upload error:', err);
-    } finally {
-      setUploading(false);
     }
+
+    const finalUploadedUrls = [...uploadedUrls, ...newUploadedUrls];
+    setUploadedUrls(finalUploadedUrls);
+    onImageUpload(finalUploadedUrls);
+
+    // Clear selected files and previews after successful upload
+    selectedFiles.forEach(file => URL.revokeObjectURL(URL.createObjectURL(file)));
+    setSelectedFiles([]);
+    setPreviewUrls([]);
+
+    setUploadSuccess('Images uploaded successfully!');
+    setUploading(false);
   };
 
   return (
@@ -62,18 +96,43 @@ const ImageUploader = ({ onImageUpload, initialImageUrl }: ImageUploaderProps) =
       />
       <label htmlFor="raised-button-file">
         <Button variant="contained" component="span" disabled={uploading}>
-          {selectedFile ? 'Change Image' : 'Select Image'}
+          Select Images
         </Button>
       </label>
-      {selectedFile && (
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          {selectedFile.name}
-        </Typography>
-      )}
       
-      {previewUrl && (
-        <Box sx={{ mt: 2, maxWidth: '100%', maxHeight: '200px', overflow: 'hidden' }}>
-          <img src={previewUrl} alt="Preview" style={{ width: 'auto', height: '100%', objectFit: 'contain' }} />
+      {/* Display uploaded images */}
+      {uploadedUrls.length > 0 && (
+        <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+          {uploadedUrls.map((url, index) => (
+            <Box key={index} sx={{ position: 'relative', width: '100px', height: '100px', border: '1px solid #ddd' }}>
+              <img src={url} alt={`Uploaded ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <IconButton
+                size="small"
+                sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'rgba(255,255,255,0.7)' }}
+                onClick={() => handleRemoveUploaded(url)}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Display new image previews */}
+      {previewUrls.length > 0 && (
+        <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+          {previewUrls.map((url, index) => (
+            <Box key={index} sx={{ position: 'relative', width: '100px', height: '100px', border: '1px solid #ddd' }}>
+              <img src={url} alt={`Preview ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <IconButton
+                size="small"
+                sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'rgba(255,255,255,0.7)' }}
+                onClick={() => handleRemovePreview(index)}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ))}
         </Box>
       )}
 
@@ -81,10 +140,10 @@ const ImageUploader = ({ onImageUpload, initialImageUrl }: ImageUploaderProps) =
         variant="outlined"
         color="primary"
         onClick={handleUpload}
-        disabled={!selectedFile || uploading}
+        disabled={selectedFiles.length === 0 || uploading}
         sx={{ mt: 2 }}
       >
-        {uploading ? <CircularProgress size={24} /> : 'Upload Image'}
+        {uploading ? <CircularProgress size={24} /> : 'Upload Selected Images'}
       </Button>
 
       {uploadSuccess && <Alert severity="success" sx={{ mt: 2 }}>{uploadSuccess}</Alert>}

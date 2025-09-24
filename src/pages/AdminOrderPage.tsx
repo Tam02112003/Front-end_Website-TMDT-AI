@@ -78,7 +78,7 @@ const AdminOrderPage = () => {
   if (selectedOrder) {
     return (
       <Box>
-        <Button onClick={() => setSelectedOrder(null)} sx={{ mb: 2 }}>Back to Orders</Button>
+        <Button variant="text" color="primary" onClick={() => setSelectedOrder(null)} sx={{ mb: 2 }}>Back to Orders</Button>
         <OrderDetail order={selectedOrder} />
       </Box>
     );
@@ -137,7 +137,7 @@ const AdminOrderPage = () => {
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <Button variant="contained" size="small" onClick={() => handleViewDetails(order.order_code)}>
+                  <Button variant="contained" color="primary" size="small" onClick={() => handleViewDetails(order.order_code)}>
                     View Details
                   </Button>
                 </TableCell>

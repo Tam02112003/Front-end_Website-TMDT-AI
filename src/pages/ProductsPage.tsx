@@ -177,7 +177,7 @@ const ProductsPage = () => {
                           transform: 'scale(1.05)'
                         }
                       }}
-                      image={product.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                      image={product.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
                       alt={product.name}
                     />
                   </Link>
@@ -249,7 +249,8 @@ const ProductsPage = () => {
                 <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0, gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
                   <Button 
                     variant="contained"
-                    size={{ xs: 'medium', sm: 'small' }}
+                    size="small"
+                    color="primary"
                     onClick={() => handleAddToCart(product)} 
                     disabled={!isLoggedIn}
                     startIcon={<ShoppingCart />}
@@ -266,8 +267,9 @@ const ProductsPage = () => {
                   </Button>
                   <Button 
                     variant="outlined"
-                    size={{ xs: 'medium', sm: 'small' }}
-                    onClick={() => handleTryOn(product.image_url || '')}
+                    size="small"
+                    color="secondary"
+                    onClick={() => handleTryOn(product.image_urls?.[0] || '')}
                     startIcon={<AutoAwesome />}
                     className="touch-target"
                     sx={{ 

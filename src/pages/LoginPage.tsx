@@ -129,8 +129,7 @@ const LoginPage = () => {
             type="submit"
             fullWidth
             variant="contained"
-            size={{ xs: 'medium', sm: 'large' }}
-            disabled={loading}
+            size="large"
             className="touch-target"
             startIcon={loading ? <CircularProgress size={20} /> : <Login />}
             sx={{ 
@@ -158,7 +157,7 @@ const LoginPage = () => {
           <Button
             fullWidth
             variant="outlined"
-            size={{ xs: 'medium', sm: 'large' }}
+            size="large"
             startIcon={<GoogleIcon />}
             onClick={handleGoogleLogin}
             className="touch-target"
