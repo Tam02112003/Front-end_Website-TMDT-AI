@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItem, ListItemText, ListItemIcon, CircularProgress } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, People, Article, Category, ModelTraining, Discount, Image } from '@mui/icons-material';
+import { ShoppingCart, People, Article, Category, ModelTraining, Discount, Image, BrandingWatermark } from '@mui/icons-material';
 import { useEffect } from 'react';
 
 const drawerWidth = 240;
@@ -62,43 +62,55 @@ const AdminLayout = () => {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            <ListItem button component={Link} to="/admin/orders">
+            <ListItem button="true" component={Link} to="/admin/orders">
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
               <ListItemText primary="Orders" />
             </ListItem>
-            <ListItem button component={Link} to="/admin/users">
+            <ListItem button="true" component={Link} to="/admin/users">
               <ListItemIcon>
                 <People />
               </ListItemIcon>
               <ListItemText primary="Users" />
             </ListItem>
-            <ListItem button component={Link} to="/admin/news">
+            <ListItem button="true" component={Link} to="/admin/news">
               <ListItemIcon>
                 <Article />
               </ListItemIcon>
               <ListItemText primary="News" />
             </ListItem>
-            <ListItem button component={Link} to="/admin/products">
+            <ListItem button="true" component={Link} to="/admin/products">
               <ListItemIcon>
                 <Category />
               </ListItemIcon>
               <ListItemText primary="Products" />
             </ListItem>
-            <ListItem button component={Link} to="/admin/recommendations">
+            <ListItem button="true" component={Link} to="/admin/brands">
+              <ListItemIcon>
+                <BrandingWatermark />
+              </ListItemIcon>
+              <ListItemText primary="Brands" />
+            </ListItem>
+            <ListItem button="true" component={Link} to="/admin/categories">
+              <ListItemIcon>
+                <Category />
+              </ListItemIcon>
+              <ListItemText primary="Categories" />
+            </ListItem>
+            <ListItem button="true" component={Link} to="/admin/recommendations">
               <ListItemIcon>
                 <ModelTraining />
               </ListItemIcon>
               <ListItemText primary="Recommendations" />
             </ListItem>
-            <ListItem button component={Link} to="/admin/discounts">
+            <ListItem button="true" component={Link} to="/admin/discounts">
               <ListItemIcon>
                 <Discount />
               </ListItemIcon>
               <ListItemText primary="Discounts" />
             </ListItem>
-            <ListItem button component={Link} to="/admin/images">
+            <ListItem button="true" component={Link} to="/admin/images">
               <ListItemIcon>
                 <Image />
               </ListItemIcon>

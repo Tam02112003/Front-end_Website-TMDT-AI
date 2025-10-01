@@ -126,7 +126,7 @@ const OrderHistoryPage = () => {
                     <ListItemText primary="Date" secondary={new Date(order.created_at).toLocaleDateString()} />
                   </Grid>
                   <Grid item xs={12} sm={2}>
-                    <ListItemText primary="Total" secondary={`${order.total_amount.toFixed(2)}`} />
+                    <ListItemText primary="Total" secondary={`${order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`} />
                   </Grid>
                   <Grid item xs={12} sm={3}>
                     <ListItemText primary="Status" secondary={order.status} />

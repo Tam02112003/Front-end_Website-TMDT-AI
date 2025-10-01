@@ -14,6 +14,17 @@ export interface User {
   username: string;
   email: string;
   is_admin: boolean;
+  avatar_url?: string;
+}
+
+export interface Brand {
+  id: number;
+  name: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
 }
 
 export interface Product {
@@ -27,6 +38,13 @@ export interface Product {
   updated_at: string;
   discount_percent?: number;
   final_price?: number;
+  release_date?: string;
+  start_date?: string;
+  end_date?: string;
+  brand?: Brand;
+  category?: Category;
+  brand_id?: number;
+  category_id?: number;
 }
 
 export interface OrderItem {

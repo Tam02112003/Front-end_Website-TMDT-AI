@@ -13,7 +13,7 @@ interface Product {
   description?: string;
   price: number;
   quantity: number;
-  image_url?: string;
+  image_urls?: string[];
   is_active?: boolean;
   created_at: string;
   updated_at: string;
@@ -92,7 +92,7 @@ const CartPage = () => {
   };
 
   const calculateTotal = () => {
-    return items.reduce((total, item) => total + (item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity, 0).toFixed(2);
+    return items.reduce((total, item) => total + (item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity, 0);
   };
 
   if (!isLoggedIn) {
@@ -191,7 +191,7 @@ const CartPage = () => {
                       <ListItemAvatar>
                         <Avatar 
                           variant="rounded" 
-                          src={item.product_details.image_url || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=150'} 
+                          src={item.product_details.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=150'} 
                           sx={{ width: { xs: 60, sm: 80 }, height: { xs: 60, sm: 80 }, mr: { xs: 0, sm: 2 }, mb: { xs: 2, sm: 0 } }} 
                         />
                       </ListItemAvatar>
@@ -206,15 +206,15 @@ const CartPage = () => {
                           item.product_details.final_price !== undefined && item.product_details.final_price < item.product_details.price ? (
                             <Box>
                               <Typography component="span" variant="body2" sx={{ textDecoration: 'line-through', mr: 1, color: 'text.secondary' }}>
-                                ${item.product_details.price.toFixed(2)}
+                                {item.product_details.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                               </Typography>
                               <Typography component="span" variant="h6" color="error.main" sx={{ fontWeight: 600 }}>
-                                ${item.product_details.final_price.toFixed(2)}
+                                {item.product_details.final_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                               </Typography>
                             </Box>
                           ) : (
                             <Typography variant="h6" color="primary.main" sx={{ fontWeight: 600 }}>
-                              ${item.product_details.price.toFixed(2)}
+                              {item.product_details.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                             </Typography>
                           )
                         }
@@ -242,7 +242,7 @@ const CartPage = () => {
                           </IconButton>
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 700, minWidth: { xs: 'auto', sm: 80 }, textAlign: { xs: 'center', sm: 'right' } }}>
-                          ${((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toFixed(2)}
+                          {((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                         </Typography>
                         <IconButton 
                           edge="end" 
@@ -275,7 +275,7 @@ const CartPage = () => {
                     Subtotal ({items.reduce((total, item) => total + item.quantity, 0)} items)
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    ${calculateTotal()}
+                    {calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                   </Typography>
                 </Box>
                 
@@ -290,7 +290,7 @@ const CartPage = () => {
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>Total</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>${calculateTotal()}</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
                 </Box>
                 
                 <Button 

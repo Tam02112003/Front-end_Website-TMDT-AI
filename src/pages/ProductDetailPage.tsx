@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import CartService from '../services/CartService';
 import ProductService from '../services/ProductService'; // Import ProductService
 import ProductRecommendation from '../components/ProductRecommendation';
+import Countdown from '../components/Countdown';
 import { Product } from '../models'; // Import Product from models.ts
 import { Comment, CommentCreate } from '../types'; // Import Comment and CommentCreate
 
@@ -23,6 +24,7 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [addLoading, setAddLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
+  const [quantityInCart, setQuantityInCart] = useState(0);
 
   // Image carousel state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -60,12 +62,42 @@ const ProductDetailPage = () => {
   };
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndCart = async () => {
       if (!productId) return;
+      console.log('DEBUG: isLoggedIn status at start of fetchProductAndCart:', isLoggedIn);
       try {
         setLoading(true);
-        const response = await api.get<Product>(`/products/${productId}`);
-        setProduct(response.data);
+        const productResponse = await api.get<Product>(`/products/${productId}`);
+        let currentProduct = productResponse.data;
+        let cartQuantity = 0;
+
+        console.log('DEBUG: Backend product quantity (total stock):', currentProduct.quantity);
+        
+        if (isLoggedIn) {
+          console.log('DEBUG: Inside isLoggedIn block.');
+          try {
+            const cartResponse = await CartService.getCart();
+            console.log('DEBUG: Raw cartResponse:', cartResponse);
+            if (cartResponse.data && Array.isArray(cartResponse.data.items)) {
+              console.log('DEBUG: Cart items array:', cartResponse.data.items);
+              const cartItem = cartResponse.data.items.find(item => {
+                console.log('DEBUG: Comparing cart item product_id:', item.product_id, 'Type:', typeof item.product_id, 'with Number(currentProduct.id):', Number(currentProduct.id));
+                return item.product_id === Number(currentProduct.id);
+              });
+              if (cartItem && typeof cartItem.quantity === 'number') {
+                cartQuantity = cartItem.quantity;
+              }
+            }
+          } catch (cartErr) {
+            console.error('Failed to fetch cart for product quantity adjustment:', cartErr);
+            // Continue even if cart fetch fails, just won't adjust quantity
+          }
+        }
+        console.log('DEBUG: Quantity of this product in cart (after find):', cartQuantity);
+        currentProduct = { ...currentProduct, quantity: currentProduct.quantity - cartQuantity };
+        console.log('DEBUG: Final calculated available quantity:', currentProduct.quantity);
+        setProduct(currentProduct);
+        setQuantityInCart(cartQuantity);
         setError(null);
       } catch (err) {
         setError('Failed to fetch product details.');
@@ -75,8 +107,8 @@ const ProductDetailPage = () => {
       }
     };
 
-    fetchProduct();
-  }, [productId]);
+    fetchProductAndCart();
+  }, [productId, isLoggedIn]);
 
   // Fetch comments effect
   useEffect(() => {
@@ -103,9 +135,19 @@ const ProductDetailPage = () => {
     try {
       await CartService.addToCart(product.id, quantity);
       setFeedback({ open: true, message: 'Added to cart successfully!', severity: 'success' });
+      // Update local product quantity and quantity in cart
+      setProduct(prevProduct => {
+        if (prevProduct) {
+          return { ...prevProduct, quantity: prevProduct.quantity - quantity };
+        }
+        return null;
+      });
+      setQuantityInCart(prevQuantity => prevQuantity + quantity);
     } catch (err) {
       setFeedback({ open: true, message: 'Failed to add to cart.', severity: 'error' });
       console.error(err);
+    } finally {
+      setAddLoading(false);
     }
   };
 
@@ -198,6 +240,21 @@ const ProductDetailPage = () => {
     setFeedback(null);
   };
 
+  const isDiscountActive = (product: Product) => {
+    if (product.discount_percent === undefined || product.discount_percent === null) {
+      return false;
+    }
+    const now = new Date();
+    const startDate = product.start_date ? new Date(product.start_date) : null;
+    const endDate = product.end_date ? new Date(product.end_date) : null;
+
+    return (
+      product.discount_percent > 0 &&
+      (!startDate || now >= startDate) &&
+      (!endDate || now <= endDate)
+    );
+  };
+
   const handlePreviousImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? (product?.image_urls?.length || 1) - 1 : prevIndex - 1
@@ -230,8 +287,8 @@ const ProductDetailPage = () => {
     <>
       <Card>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ position: 'relative', width: '100%', paddingTop: '100%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
+          <Grid item xs={12} md={8}>
+            <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
               {product.image_urls && product.image_urls.length > 0 ? (
                 <CardMedia
                   component="img"
@@ -274,8 +331,8 @@ const ProductDetailPage = () => {
                     key={index}
                     component="img"
                     sx={{
-                      width: '80px', 
-                      height: '80px', 
+                      width: '100px', 
+                      height: '100px', 
                       objectFit: 'cover', 
                       flexShrink: 0,
                       cursor: 'pointer',
@@ -291,55 +348,63 @@ const ProductDetailPage = () => {
               </Box>
             )}
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <CardContent>
-              <Typography variant="h4" component="h1" gutterBottom>
-                {product.name}
-              </Typography>
-              {product.discount_percent && product.final_price !== undefined ? (
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <Typography variant="h5" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                    ${product.price.toFixed(2)}
-                  </Typography>
-                  <Typography variant="h4" color="error">
-                    ${product.final_price.toFixed(2)}
-                  </Typography>
-                  <Typography variant="body2" color="error">
-                    ({product.discount_percent}% OFF)
-                  </Typography>
-                </Box>
-              ) : (
-                <Typography variant="h5" color="text.secondary" gutterBottom>
-                  ${product.price.toFixed(2)}
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                <Typography variant="h4" component="h1" gutterBottom>
+                  {product.name}
                 </Typography>
+              </Box>
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                {isDiscountActive(product) ? (
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                    <Typography variant="h5" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+                      {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                    </Typography>
+                    <Typography variant="h4" color="error">
+                      {product.final_price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                    </Typography>
+                    <Typography variant="body2" color="error">
+                      ({product.discount_percent}% OFF)
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="h5" color="text.secondary" gutterBottom>
+                    {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                  </Typography>
+                )}
+              </Box>
+              {product.release_date && new Date(product.release_date) > new Date() && (
+                <Countdown releaseDate={product.release_date} />
               )}
-              <Typography variant="body1" paragraph>
-                {product.description}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                In stock: {product.quantity}
-              </Typography>
-              <Box sx={{ mt: 4, display: 'flex', alignItems: 'center' }}>
-                <TextField
-                  label="Qty"
-                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant="outlined"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  sx={{ width: '80px', mr: 2 }}
-                  inputProps={{ min: 1, max: product.quantity }}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddToCart}
-                  disabled={!isLoggedIn || addLoading || product.quantity === 0}
-                >
-                  {addLoading ? <CircularProgress size={24} /> : 'Add to Cart'}
-                </Button>
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                <Typography variant="body2" color="text.secondary">
+                  In stock: {product.quantity}
+                </Typography>
+              </Box>
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TextField
+                    label="Qty"
+                    type="number"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    variant="outlined"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity, parseInt(e.target.value, 10) || 1)))}
+                    sx={{ width: '80px', mr: 2 }}
+                    inputProps={{ min: 1, max: product.quantity }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleAddToCart}
+                    disabled={!isLoggedIn || addLoading || product.quantity === 0 || quantity > product.quantity || (product.release_date && new Date(product.release_date) > new Date())}
+                  >
+                    {addLoading ? <CircularProgress size={24} /> : 'Add to Cart'}
+                  </Button>
+                </Box>
               </Box>
               {!isLoggedIn && (
                 <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
@@ -350,6 +415,14 @@ const ProductDetailPage = () => {
           </Grid>
         </Grid>
       </Card>
+
+      {/* Product Description */}
+      <Box sx={{ mt: 4, p: 3, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          Product Description
+        </Typography>
+        <div dangerouslySetInnerHTML={{ __html: product.description || '' }} style={{ whiteSpace: 'pre-wrap' }} />
+      </Box>
 
       {/* Comments Section */}
       <Box sx={{ mt: 4 }}>

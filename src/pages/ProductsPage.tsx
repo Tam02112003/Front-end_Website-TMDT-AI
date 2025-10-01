@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Typography, Grid, Card, CardMedia, CardContent, CircularProgress, Alert, Box, Button, CardActions, TextField, InputAdornment, Snackbar, Chip, Container, Paper } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { Product } from '../models';
+import { Product, Brand, Category } from '../models';
 import ProductService from '../services/ProductService';
 import CartService from '../services/CartService';
+import BrandService from '../services/BrandService';
+import CategoryService from '../services/CategoryService';
 import { useAuth } from '../context/AuthContext';
+import Countdown from '../components/Countdown';
+import ProductFilter from '../components/ProductFilter';
 import { Search, ShoppingCart, Visibility, AutoAwesome, FilterList } from '@mui/icons-material';
 import '../styles/responsive.css';
 
@@ -15,13 +19,32 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filters, setFilters] = useState<{ brand_id?: number; category_id?: number; min_price?: number; max_price?: number; }>({});
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const [brandsResponse, categoriesResponse] = await Promise.all([
+          BrandService.getBrands(),
+          CategoryService.getCategories(),
+        ]);
+        setBrands(brandsResponse.data);
+        setCategories(categoriesResponse.data);
+      } catch (err) {
+        console.error('Failed to fetch filters', err);
+      }
+    };
+    fetchFilters();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await ProductService.getAllProducts(searchQuery);
+        const response = await ProductService.getAllProducts(searchQuery, filters.category_id, filters.brand_id, filters.min_price, filters.max_price);
         setProducts(response.data);
         setError(null);
       } catch (err) {
@@ -39,7 +62,11 @@ const ProductsPage = () => {
     return () => {
       clearTimeout(handler);
     };
-  }, [searchQuery]);
+  }, [searchQuery, filters]);
+
+  const handleFilterChange = (newFilters: { brand_id?: number; category_id?: number; min_price?: number; max_price?: number; }) => {
+    setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
+  };
 
   const handleAddToCart = async (product: Product) => {
     if (!isLoggedIn) {
@@ -63,6 +90,21 @@ const ProductsPage = () => {
     setFeedback(null);
   };
 
+  const isDiscountActive = (product: Product) => {
+    if (product.discount_percent === undefined || product.discount_percent === null) {
+      return false;
+    }
+    const now = new Date();
+    const startDate = product.start_date ? new Date(product.start_date) : null;
+    const endDate = product.end_date ? new Date(product.end_date) : null;
+
+    return (
+      product.discount_percent > 0 &&
+      (!startDate || now >= startDate) &&
+      (!endDate || now <= endDate)
+    );
+  };
+
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -81,7 +123,7 @@ const ProductsPage = () => {
           className="responsive-heading-1"
           sx={{ 
             fontWeight: 700,
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            fontSize: { xs: '1.8rem', sm: '2.3rem', md: '2.8rem' },
             background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
@@ -91,7 +133,7 @@ const ProductsPage = () => {
         >
           Our Products
         </Typography>
-        <Typography variant="h6" className="responsive-body" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+        <Typography variant="h6" className="responsive-body" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.9rem', md: '1.1rem' } }}>
           Discover our amazing collection of fashion items
         </Typography>
         
@@ -137,23 +179,26 @@ const ProductsPage = () => {
         </Paper>
       </Box>
 
+      <ProductFilter brands={brands} categories={categories} filters={filters} onFilterChange={handleFilterChange} />
+
       {/* Products Grid */}
       {products.length === 0 && !loading ? (
         <Paper sx={{ p: { xs: 4, md: 6 }, textAlign: 'center', borderRadius: 3 }}>
-          <Typography variant="h5" color="text.secondary" gutterBottom>
+          <Typography variant="h5" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
             No products found
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Try adjusting your search terms or browse all products.
+          <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
+            Try adjusting your search terms or filters.
           </Typography>
         </Paper>
       ) : (
-        <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid">
+        <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid" justifyContent="center">
           {products.map((product) => (
-            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2}>
+            <Grid item key={product.id}>
               <Card 
                 sx={{ 
-                  height: '100%', 
+                  width: 300,
+                  height: 450, 
                   display: 'flex', 
                   flexDirection: 'column',
                   borderRadius: 3,
@@ -170,7 +215,7 @@ const ProductsPage = () => {
                     <CardMedia
                       component="img"
                       sx={{ 
-                        height: { xs: 200, sm: 240, md: 280 },
+                        height: 280,
                         objectFit: 'cover',
                         transition: 'transform 0.3s ease',
                         '&:hover': {
@@ -181,7 +226,7 @@ const ProductsPage = () => {
                       alt={product.name}
                     />
                   </Link>
-                  {product.discount_percent && (
+                  {isDiscountActive(product) && (
                     <Chip
                       label={`${product.discount_percent}% OFF`}
                       color="error"
@@ -196,7 +241,7 @@ const ProductsPage = () => {
                   )}
                 </Box>
                 
-                <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Typography 
                       variant="h6" 
@@ -204,7 +249,7 @@ const ProductsPage = () => {
                       gutterBottom
                       sx={{ 
                         fontWeight: 600,
-                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                         lineHeight: 1.3,
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -217,30 +262,31 @@ const ProductsPage = () => {
                   </Link>
                   
                   <Box sx={{ mt: 2 }}>
-                    {product.discount_percent && product.final_price !== undefined ? (
+                    {product.release_date && new Date(product.release_date) > new Date() ? (
+                      <Countdown releaseDate={product.release_date} />
+                    ) : product.discount_percent && product.final_price !== undefined ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography 
                           variant="body2" 
                           color="text.secondary" 
-                          sx={{ textDecoration: 'line-through' }}
-                        >
-                          ${product.price.toFixed(2)}
-                        </Typography>
-                        <Typography 
+                                                sx={{ textDecoration: 'line-through', fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' } }}
+                                          >
+                                            {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                          </Typography>                        <Typography 
                           variant="h6" 
                           color="error.main" 
-                          sx={{ fontWeight: 700 }}
+                          sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}
                         >
-                          ${product.final_price.toFixed(2)}
+                          {product.final_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                         </Typography>
                       </Box>
                     ) : (
                       <Typography 
                         variant="h6" 
                         color="primary.main" 
-                        sx={{ fontWeight: 700 }}
+                        sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}
                       >
-                        ${product.price.toFixed(2)}
+                        {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                       </Typography>
                     )}
                   </Box>
@@ -252,7 +298,7 @@ const ProductsPage = () => {
                     size="small"
                     color="primary"
                     onClick={() => handleAddToCart(product)} 
-                    disabled={!isLoggedIn}
+                    disabled={!isLoggedIn || (product.release_date && new Date(product.release_date) > new Date()) || product.quantity <= 0}
                     startIcon={<ShoppingCart />}
                     className="touch-target"
                     sx={{ 

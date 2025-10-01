@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, Select, MenuItem } from '@mui/material';
 import { getNews, createNews, updateNews, deleteNews, generateAINews, getDeletedNews, restoreNews } from '../services/NewsService';
 import ImageUploader from '../components/ImageUploader';
+import RichTextEditor from '../components/RichTextEditor';
 
 interface News {
   id: number;
@@ -114,10 +115,10 @@ const AdminNewsPage = () => {
     });
   };
 
-  const handleImageUpload = (url: string) => {
+  const handleImageUpload = (urls: string[]) => {
     setCurrentNews((prevNews) => {
       if (prevNews) {
-        return { ...prevNews, image_url: url };
+        return { ...prevNews, image_url: urls.length > 0 ? urls[0] : undefined };
       }
       return null;
     });
@@ -249,19 +250,19 @@ const AdminNewsPage = () => {
                 value={currentNews.title}
                 onChange={handleInputChange}
               />
-              <TextField
-                margin="dense"
-                name="content"
-                label="Content"
-                type="text"
-                fullWidth
-                multiline
-                rows={4}
-                variant="standard"
-                value={currentNews.content}
-                onChange={handleInputChange}
+              <RichTextEditor
+                value={currentNews.content || ''}
+                onChange={(value) => {
+                  setCurrentNews((prevNews) => {
+                    if (prevNews) {
+                      return { ...prevNews, content: value };
+                    }
+                    return null;
+                  });
+                }}
+                placeholder="News Content"
               />
-              <ImageUploader onImageUpload={handleImageUpload} initialImageUrl={currentNews.image_url} />
+              <ImageUploader onImageUpload={handleImageUpload} initialImageUrls={currentNews.image_url ? [currentNews.image_url] : []} />
               <FormControlLabel
                 control={
                   <Switch

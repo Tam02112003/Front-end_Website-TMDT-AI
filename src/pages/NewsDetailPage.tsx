@@ -64,9 +64,7 @@ const NewsDetailPage = () => {
       <Typography variant="body2" color="text.secondary" gutterBottom>
         Published: {new Date(newsArticle.created_at).toLocaleDateString()}
       </Typography>
-      <Typography variant="body1" paragraph>
-        {newsArticle.content}
-      </Typography>
+      <div dangerouslySetInnerHTML={{ __html: newsArticle.content || '' }} style={{ whiteSpace: 'pre-wrap' }} />
     </Paper>
   );
 };

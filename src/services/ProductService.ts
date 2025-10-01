@@ -9,8 +9,8 @@ const createProduct = (productData: ProductCreate) => {
   return api.post<Product>('/admin/products', productData);
 };
 
-const getAllProducts = (searchQuery?: string) => {
-  return api.get<Product[]>('/products', { params: { search: searchQuery } });
+const getAllProducts = (searchQuery?: string, category_id?: number, brand_id?: number, min_price?: number, max_price?: number) => {
+  return api.get<Product[]>('/products', { params: { search: searchQuery, category_id, brand_id, min_price, max_price } });
 };
 
 const getProductById = (productId: number) => {

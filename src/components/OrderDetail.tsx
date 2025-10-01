@@ -30,7 +30,7 @@ const OrderDetail = ({ order }: OrderDetailProps) => {
           <Typography><strong>Phone:</strong> {order.shipping_phone_number || order.customer_phone || 'N/A'}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Typography><strong>Total:</strong> ${order.total_amount.toFixed(2)}</Typography>
+          <Typography><strong>Total:</strong> {order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
           <Typography><strong>Status:</strong> {order.status}</Typography>
           <Typography><strong>Shipping Address:</strong></Typography>
           <Typography>{order.shipping_address}</Typography>
@@ -50,7 +50,7 @@ const OrderDetail = ({ order }: OrderDetailProps) => {
               <Typography>{item.product_name || `Product ID: ${item.product_id}`}</Typography>
               <Typography color="text.secondary">Quantity: {item.quantity}</Typography>
             </Box>
-            <Typography>${(item.price * item.quantity).toFixed(2)}</Typography>
+            <Typography>{(item.price * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
           </Box>
         ))
       ) : (

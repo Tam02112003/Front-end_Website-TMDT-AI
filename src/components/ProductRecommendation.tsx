@@ -45,12 +45,27 @@ const ProductRecommendation = ({ productId }: ProductRecommendationProps) => {
   }
 
   if (recommendations.length === 0) {
-    return <Typography variant="body1">No recommendations found for this product.</Typography>;
+    return <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>No recommendations found for this product.</Typography>;
   }
+
+  const isDiscountActive = (product: Product) => {
+    if (product.discount_percent === undefined || product.discount_percent === null) {
+      return false;
+    }
+    const now = new Date();
+    const startDate = product.start_date ? new Date(product.start_date) : null;
+    const endDate = product.end_date ? new Date(product.end_date) : null;
+
+    return (
+      product.discount_percent > 0 &&
+      (!startDate || now >= startDate) &&
+      (!endDate || now <= endDate)
+    );
+  };
 
   return (
     <Box sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
         Recommended Products
       </Typography>
       <Grid container spacing={3}>
@@ -64,24 +79,24 @@ const ProductRecommendation = ({ productId }: ProductRecommendationProps) => {
                 alt={product.name}
               />
               <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h6" component="h2" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <Typography gutterBottom variant="h6" component="h2" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
                   {product.name}
                 </Typography>
-                {product.discount_percent && product.final_price !== undefined ? (
+                {isDiscountActive(product) ? (
                   <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                      ${product.price.toFixed(2)}
+                    <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through', fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' } }}>
+                      {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                     </Typography>
-                    <Typography variant="h6" color="error">
-                      ${product.final_price.toFixed(2)}
+                    <Typography variant="h6" color="error" sx={{ fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
+                      {product.final_price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                     </Typography>
                     <Typography variant="body2" color="error">
                       ({product.discount_percent}% OFF)
                     </Typography>
                   </Box>
                 ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    ${product.price.toFixed(2)}
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' } }}>
+                    {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                   </Typography>
                 )}
               </CardContent>

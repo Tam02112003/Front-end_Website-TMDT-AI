@@ -52,21 +52,21 @@ const Layout = () => {
         <Container maxWidth="xl" className="responsive-container">
           <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
             {/* Logo */}
-            <Typography 
-              variant="h5" 
-              component="div" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1
               }}
             >
-              <Button 
-                color="inherit" 
-                component={Link} 
+              <Button
+                color="inherit"
+                component={Link}
                 to="/"
-                sx={{ 
+                sx={{
                   fontSize: '1.25rem',
                   fontWeight: 700,
                   textTransform: 'none',
@@ -76,7 +76,7 @@ const Layout = () => {
                 }}
               >
                 <AutoAwesome sx={{ mr: 1 }} />
-                AI Try-On
+                MinhTam AI Shop
               </Button>
             </Typography>
 
@@ -112,23 +112,6 @@ const Layout = () => {
                 }}
               >
                 Products
-              </Button>
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/try-on"
-                startIcon={<AutoAwesome />}
-                sx={{ 
-                  textTransform: 'none',
-                  display: { xs: 'none', md: 'flex' },
-                  fontWeight: 500,
-                  px: 2,
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                Try On
               </Button>
               <Button 
                 color="inherit" 
@@ -271,23 +254,7 @@ const Layout = () => {
               >
                 Products
               </Button>
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/try-on"
-                fullWidth
-                startIcon={<AutoAwesome />}
-                onClick={() => setMobileMenuOpen(false)}
-                sx={{ 
-                  justifyContent: 'flex-start',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  py: 1.5,
-                  mb: 1
-                }}
-              >
-                Try On
-              </Button>
+
               <Button 
                 color="inherit" 
                 component={Link} 
@@ -330,7 +297,7 @@ const Layout = () => {
           <Typography variant="body1" align="center" sx={{ fontWeight: 500 }}>
             {'Copyright © '}
             <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-              AI Try-On
+              MinhTam AI Shop
             </Link>{' '}
             {new Date().getFullYear()}
             {'. Experience the future of fashion.'}

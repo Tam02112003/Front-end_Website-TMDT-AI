@@ -62,8 +62,8 @@ const ProfilePage = () => {
     }
   };
 
-  const handleImageUpload = (url: string) => {
-    setFormData((prev) => ({ ...prev, avatar_url: url }));
+  const handleImageUpload = (urls: string[]) => {
+    setFormData((prev) => ({ ...prev, avatar_url: urls.length > 0 ? urls[0] : '' }));
   };
 
   const handleSendOtp = async () => {
@@ -205,7 +205,7 @@ const ProfilePage = () => {
             </Box>
           )}
 
-          <ImageUploader onImageUpload={handleImageUpload} initialImageUrl={formData.avatar_url} />
+          <ImageUploader onImageUpload={handleImageUpload} initialImageUrls={formData.avatar_url ? [formData.avatar_url] : []} />
           <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={loading}>
             {loading ? <CircularProgress size={24} /> : 'Save Changes'}
           </Button>

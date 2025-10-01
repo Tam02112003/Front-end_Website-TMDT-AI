@@ -122,7 +122,7 @@ const AdminOrderPage = () => {
                 <TableCell>{order.order_code}</TableCell>
                 <TableCell>{order.user_id}</TableCell>
                 <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                <TableCell>{order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</TableCell>
                 <TableCell>
                   <Select
                     value={order.status}

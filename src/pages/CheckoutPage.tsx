@@ -66,7 +66,7 @@ const CheckoutPage = () => {
   }, [isLoggedIn, navigate]);
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity, 0).toFixed(2);
+    return cartItems.reduce((total, item) => total + (item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity, 0);
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,13 +242,13 @@ const CheckoutPage = () => {
             {cartItems.map((item) => (
               <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2">{item.product_details.name} (x{item.quantity})</Typography>
-                <Typography variant="body2">${((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toFixed(2)}</Typography>
+                <Typography variant="body2">{((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
               </Box>
             ))}
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
               <Typography variant="h6">Total</Typography>
-              <Typography variant="h6">${calculateTotal()}</Typography>
+              <Typography variant="h6">{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
             </Box>
             <Button
               variant="contained"

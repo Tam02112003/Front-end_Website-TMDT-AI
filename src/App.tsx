@@ -17,6 +17,8 @@ import AdminOrderPage from './pages/AdminOrderPage';
 import AdminUserPage from './pages/AdminUserPage';
 import AdminNewsPage from './pages/AdminNewsPage';
 import AdminProductPage from './pages/AdminProductPage';
+import AdminBrandPage from './pages/AdminBrandPage';
+import AdminCategoryPage from './pages/AdminCategoryPage';
 import AdminRecommendationPage from './pages/AdminRecommendationPage';
 import AdminDiscountPage from './pages/AdminDiscountPage';
 import NewsPage from './pages/NewsPage';
@@ -68,6 +70,8 @@ function App() {
           <Route path="users" element={<AdminUserPage />} />
           <Route path="news" element={<AdminNewsPage />} />
           <Route path="products" element={<AdminProductPage />} />
+          <Route path="brands" element={<AdminBrandPage />} />
+          <Route path="categories" element={<AdminCategoryPage />} />
           <Route path="recommendations" element={<AdminRecommendationPage />} />
           <Route path="discounts" element={<AdminDiscountPage />} />
           <Route path="images" element={<AdminImageGalleryPage />} />

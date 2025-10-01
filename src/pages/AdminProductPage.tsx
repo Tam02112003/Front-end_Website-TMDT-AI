@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, InputAdornment } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, InputAdornment, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 import ProductService from '../services/ProductService';
-import { Product } from '../models';
+import BrandService from '../services/BrandService';
+import CategoryService from '../services/CategoryService';
+import { Product, Brand, Category } from '../models';
 import ImageUploader from '../components/ImageUploader';
+import RichTextEditor from '../components/RichTextEditor';
 
 const AdminProductPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -35,6 +43,20 @@ const AdminProductPage = () => {
     }
   };
 
+  const fetchBrandsAndCategories = async () => {
+    try {
+      const [brandsResponse, categoriesResponse] = await Promise.all([
+        BrandService.getBrands(),
+        CategoryService.getCategories(),
+      ]);
+      setBrands(brandsResponse.data);
+      setCategories(categoriesResponse.data);
+    } catch (err) {
+      setError('Failed to fetch brands and categories.');
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const handler = setTimeout(() => {
       fetchProducts(searchQuery);
@@ -44,6 +66,10 @@ const AdminProductPage = () => {
       clearTimeout(handler);
     };
   }, [searchQuery, showDeleted]); // Re-run effect when searchQuery or showDeleted changes
+
+  useEffect(() => {
+    fetchBrandsAndCategories();
+  }, []);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
@@ -59,7 +85,7 @@ const AdminProductPage = () => {
     };
   
     const handleCreateClick = () => {
-      setCurrentProduct({ id: 0, name: '', description: '', price: 0, quantity: 0, image_urls: [], is_active: true, created_at: '', updated_at: '' });
+      setCurrentProduct({ id: 0, name: '', description: '', price: 0, quantity: 0, image_urls: [], is_active: true, created_at: '', updated_at: '', release_date: null });
       setIsEditing(false);
       setOpenDialog(true);
     };
@@ -116,11 +142,11 @@ const AdminProductPage = () => {
       setCurrentProduct(null);
     };
   
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value, checked, type } = e.target;
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
+      const { name, value } = e.target;
       setCurrentProduct((prevProduct) => {
         if (prevProduct) {
-          return { ...prevProduct, [name]: type === 'checkbox' ? checked : value };
+          return { ...prevProduct, [name as string]: value };
         }
         return null;
       });
@@ -264,17 +290,17 @@ const AdminProductPage = () => {
                   value={currentProduct.name}
                   onChange={handleInputChange}
                 />
-                <TextField
-                  margin="dense"
-                  name="description"
-                  label="Description"
-                  type="text"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  variant="standard"
-                  value={currentProduct.description}
-                  onChange={handleInputChange}
+                <RichTextEditor
+                  value={currentProduct.description || ''}
+                  onChange={(value) => {
+                    setCurrentProduct((prevProduct) => {
+                      if (prevProduct) {
+                        return { ...prevProduct, description: value };
+                      }
+                      return null;
+                    });
+                  }}
+                  placeholder="Product Description"
                 />
                 <TextField
                   margin="dense"
@@ -296,6 +322,49 @@ const AdminProductPage = () => {
                   value={currentProduct.quantity}
                   onChange={handleInputChange}
                 />
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Brand</InputLabel>
+                  <Select
+                    name="brand_id"
+                    value={currentProduct.brand_id || ''}
+                    onChange={handleInputChange}
+                  >
+                    {brands.map((brand) => (
+                      <MenuItem key={brand.id} value={brand.id}>
+                        {brand.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="category_id"
+                    value={currentProduct.category_id || ''}
+                    onChange={handleInputChange}
+                  >
+                    {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateTimePicker
+                    label="Release Date"
+                    value={currentProduct.release_date ? dayjs(currentProduct.release_date) : null}
+                    onChange={(newValue) => {
+                      setCurrentProduct((prevProduct) => {
+                        if (prevProduct) {
+                          return { ...prevProduct, release_date: newValue ? newValue.toISOString() : null };
+                        }
+                        return null;
+                      });
+                    }}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                </LocalizationProvider>
                 <ImageUploader onImageUpload={handleImageUploads} initialImageUrls={currentProduct.image_urls || []} />
                 <FormControlLabel
                   control={
