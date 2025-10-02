@@ -65,11 +65,64 @@ const Chatbot = () => {
   };
 
   const cleanText = (text: string) => {
-    let cleaned = text.replace(/[[\\\]*]/g, '').trim();
+    let cleaned = text
+      .replace(/[[\\]*]/g, '')
+      .trim();
     cleaned = cleaned.replace(/\. /g, '.\n');
     cleaned = cleaned.replace(/: /g, ':\n');
     return cleaned;
   };
+
+const renderMessageContent = (content: string) => {
+  // Giữ link ảnh, bỏ "[Xem ảnh(...)]"
+  content = content.replace(/\[Xem ảnh\((.*?)\)\]/gi, '$1');
+
+  // Loại bỏ "- Hình ảnh:" và các dòng chỉ có "-"
+  content = content.replace(/- *Hình ảnh:*/gi, '');
+  content = content.replace(/^- *$/gm, '');
+
+  const parts: (string | JSX.Element)[] = [];
+  const regex = /!\[.*?\]\((.*?)\)|(https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|bmp|svg|webp))/gi;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      const textPart = content.substring(lastIndex, match.index);
+      parts.push(textPart);
+    }
+
+    const imageUrl = match[1] || match[0];
+    parts.push(
+      <img
+        key={`image-${lastIndex}`}
+        src={imageUrl}
+        alt=""
+        style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginTop: '8px' }}
+      />
+    );
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < content.length) {
+    const textPart = content.substring(lastIndex);
+    parts.push(textPart);
+  }
+
+  return parts.map((part, i) => {
+    if (typeof part === 'string') {
+      const cleaned = cleanText(part);
+      return cleaned.split('\n').map((line, j) => (
+        line.trim() && <Typography key={`text-${i}-${j}`} variant="body1">{line.trim()}</Typography>
+      ));
+    }
+    return part;
+  });
+};
+
+
+
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
@@ -116,44 +169,7 @@ const Chatbot = () => {
                   }}
                 >
                   {msg.role === 'assistant' ? (
-                    (() => {
-                      const imageUrls = [];
-                      const textParts = [];
-                      const urlRegex = /(https?:\/\/[^\s]+)/g;
-                      let lastIndex = 0;
-                      let match;
-
-                      while ((match = urlRegex.exec(msg.content)) !== null) {
-                        if (match.index > lastIndex) {
-                          textParts.push(msg.content.substring(lastIndex, match.index));
-                        }
-                        imageUrls.push(match[0]);
-                        lastIndex = urlRegex.lastIndex;
-                      }
-
-                      if (lastIndex < msg.content.length) {
-                        textParts.push(msg.content.substring(lastIndex));
-                      }
-
-                      return (
-                        <>
-                          {textParts.length > 0 && textParts.some(text => text.trim() !== '') && textParts.map((text, i) => {
-                            const cleaned = cleanText(text);
-                            return cleaned.split('\n').map((line, j) => (
-                              line.trim() && <Typography key={`text-${i}-${j}`} variant="body1">{line.trim()}</Typography>
-                            ));
-                          })}
-                          {imageUrls.map((url, i) => (
-                            <img
-                              key={`image-${i}`}
-                              src={url}
-                              alt=""
-                              style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginTop: '8px' }}
-                            />
-                          ))}
-                        </>
-                      );
-                    })()
+                    renderMessageContent(msg.content)
                   ) : (
                     <Typography variant="body1">{msg.content}</Typography>
                   )}
@@ -178,7 +194,7 @@ const Chatbot = () => {
               disabled={loading}
               size="small"
             />
-            <IconButton color="primary" onClick={handleSendMessage} disabled={loading} sx={{ ml: 1 }}>
+            <IconButton color="primary" onClick={handleSendMessage} disabled={loading || !input.trim()} sx={{ ml: 1 }}>
               <SendIcon />
             </IconButton>
           </Box>
