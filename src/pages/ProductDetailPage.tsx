@@ -11,7 +11,7 @@ import ProductService from '../services/ProductService'; // Import ProductServic
 import ProductRecommendation from '../components/ProductRecommendation';
 import Countdown from '../components/Countdown';
 import { Product } from '../models'; // Import Product from models.ts
-import { Comment, CommentCreate } from '../types'; // Import Comment and CommentCreate
+import { Comment, CommentCreate, CartItem } from '../types'; // Import Comment and CommentCreate
 
 // This comment is added to force re-compilation
 
@@ -79,7 +79,7 @@ const ProductDetailPage = () => {
             console.log('DEBUG: Raw cartResponse:', cartResponse);
             if (cartResponse.data && Array.isArray(cartResponse.data.items)) {
               console.log('DEBUG: Cart items array:', cartResponse.data.items);
-              const cartItem = cartResponse.data.items.find(item => {
+              const cartItem = cartResponse.data.items.find((item: CartItem) => {
                 console.log('DEBUG: Comparing cart item product_id:', item.product_id, 'Type:', typeof item.product_id, 'with Number(currentProduct.id):', Number(currentProduct.id));
                 return item.product_id === Number(currentProduct.id);
               });
@@ -279,7 +279,7 @@ const ProductDetailPage = () => {
     <>
       <Card>
         <Grid container spacing={2}>
-          <Grid xs={12} md={8}>
+          <Grid item xs={12} md={8}>
             <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
               {product.image_urls && product.image_urls.length > 0 ? (
                 <CardMedia
@@ -340,7 +340,7 @@ const ProductDetailPage = () => {
               </Box>
             )}
           </Grid>
-          <Grid xs={12} md={4}>
+          <Grid item xs={12} md={4}>
             <CardContent>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                 <Typography variant="h4" component="h1" gutterBottom>
@@ -392,7 +392,7 @@ const ProductDetailPage = () => {
                     variant="contained"
                     color="primary"
                     onClick={handleAddToCart}
-                    disabled={!isLoggedIn || addLoading || (product.quantity ?? 0) === 0 || quantity > (product.quantity ?? 0) || (product.release_date && new Date(product.release_date) > new Date())}
+                    disabled={!isLoggedIn || addLoading || (product.quantity ?? 0) === 0 || quantity > (product.quantity ?? 0) || !!(product.release_date && new Date(product.release_date) > new Date())}
                   >
                     {addLoading ? <CircularProgress size={24} /> : 'Add to Cart'}
                   </Button>
@@ -436,7 +436,7 @@ const ProductDetailPage = () => {
                 key={comment.id}
                 comment={comment}
                 level={0}
-                productId={productId}
+                productId={productId ?? ''}
                 isLoggedIn={isLoggedIn}
                 user={user}
                 editingCommentId={editingCommentId}

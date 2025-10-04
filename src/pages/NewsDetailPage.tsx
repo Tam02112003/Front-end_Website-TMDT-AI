@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Typography, Box, CircularProgress, Alert, Paper, CardMedia } from '@mui/material';
 import { getPublicNewsById } from '../services/NewsServicePublic';
-import { News } from '../types';
+import { News } from '../models';
 
 const NewsDetailPage = () => {
   const { newsId } = useParams<{ newsId: string }>();

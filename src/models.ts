@@ -57,6 +57,15 @@ export interface OrderItem {
   image_urls?: string[];
 }
 
+export interface OrderSummary {
+  id: number;
+  user_id: number;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  order_code: string;
+}
+
 export interface Order {
   id: number;
   order_code: string;

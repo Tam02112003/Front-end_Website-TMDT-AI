@@ -4,21 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OrderService from '../services/OrderService';
 import OrderDetail from '../components/OrderDetail';
-
-// This interface represents a single order in the list
-interface OrderSummary {
-  id: number;
-  user_id: number;
-  total_amount: number; // Changed from total_price
-  status: string;
-  created_at: string;
-  order_code: string;
-}
-
-// This interface represents the full order with items
-interface Order extends OrderSummary {
-  items: any[]; // Changed from order_items and simplified for now
-}
+import { Order, OrderSummary } from '../models';
 
 const OrderHistoryPage = () => {
   const { isLoggedIn } = useAuth();
@@ -119,19 +105,19 @@ const OrderHistoryPage = () => {
             <Paper key={order.id} sx={{ mb: 2 }}>
               <ListItem>
                 <Grid container spacing={2} alignItems="center">
-                  <Grid xs={12} sm={2}>
+                  <Grid item xs={12} sm={2}>
                     <ListItemText primary="Order Code" secondary={order.order_code} />
                   </Grid>
-                  <Grid xs={12} sm={3}>
+                  <Grid item xs={12} sm={3}>
                     <ListItemText primary="Date" secondary={new Date(order.created_at).toLocaleDateString()} />
                   </Grid>
-                  <Grid xs={12} sm={2}>
+                  <Grid item xs={12} sm={2}>
                     <ListItemText primary="Total" secondary={`${order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`} />
                   </Grid>
-                  <Grid xs={12} sm={3}>
+                  <Grid item xs={12} sm={3}>
                     <ListItemText primary="Status" secondary={order.status} />
                   </Grid>
-                  <Grid xs={12} sm={2}>
+                  <Grid item xs={12} sm={2}>
                     <Button variant="contained" size="small" onClick={() => handleViewDetails(order.order_code)}>
                       View Details
                     </Button>
