@@ -3,16 +3,7 @@ import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, 
 import { getNews, createNews, updateNews, deleteNews, generateAINews, getDeletedNews, restoreNews } from '../services/NewsService';
 import ImageUploader from '../components/ImageUploader';
 import RichTextEditor from '../components/RichTextEditor';
-
-interface News {
-  id: number;
-  title: string;
-  content?: string;
-  image_url?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { News } from '../models';
 
 const AdminNewsPage = () => {
   const [news, setNews] = useState<News[]>([]);

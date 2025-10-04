@@ -1,39 +1,5 @@
 import api from './api';
-
-interface NewsCreate {
-  title: string;
-  content?: string;
-  image_url?: string;
-  is_active?: boolean;
-}
-
-interface NewsUpdate {
-  title?: string;
-  content?: string;
-  image_url?: string;
-  is_active?: boolean;
-}
-
-interface News {
-  id: number;
-  title: string;
-  content?: string;
-  image_url?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface AINewsGenerateRequest {
-  topic: string;
-  keywords?: string;
-  length: string;
-}
-
-interface AINewsGenerateResponse {
-  title: string;
-  content: string;
-}
+import { News, NewsCreate, NewsUpdate, AINewsGenerateRequest, AINewsGenerateResponse } from '../models';
 
 export const createNews = (newsData: NewsCreate) => {
   return api.post<News>('/admin/news', newsData);

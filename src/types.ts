@@ -1,15 +1,3 @@
-export interface Product {
-  id: number;
-  name: string;
-  description?: string;
-  price: number;
-  quantity: number;
-  image_url?: string;
-  is_active?: boolean;
-  created_at: string; // ISO date string
-  updated_at: string; // ISO date string
-}
-
 export interface CartItem {
   product_id: number;
   name: string;

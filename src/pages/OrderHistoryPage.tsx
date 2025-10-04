@@ -119,19 +119,19 @@ const OrderHistoryPage = () => {
             <Paper key={order.id} sx={{ mb: 2 }}>
               <ListItem>
                 <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} sm={2}>
+                  <Grid xs={12} sm={2}>
                     <ListItemText primary="Order Code" secondary={order.order_code} />
                   </Grid>
-                  <Grid item xs={12} sm={3}>
+                  <Grid xs={12} sm={3}>
                     <ListItemText primary="Date" secondary={new Date(order.created_at).toLocaleDateString()} />
                   </Grid>
-                  <Grid item xs={12} sm={2}>
+                  <Grid xs={12} sm={2}>
                     <ListItemText primary="Total" secondary={`${order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`} />
                   </Grid>
-                  <Grid item xs={12} sm={3}>
+                  <Grid xs={12} sm={3}>
                     <ListItemText primary="Status" secondary={order.status} />
                   </Grid>
-                  <Grid item xs={12} sm={2}>
+                  <Grid xs={12} sm={2}>
                     <Button variant="contained" size="small" onClick={() => handleViewDetails(order.order_code)}>
                       View Details
                     </Button>

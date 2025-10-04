@@ -15,6 +15,7 @@ export interface User {
   email: string;
   is_admin: boolean;
   avatar_url?: string;
+  phone_number?: string;
 }
 
 export interface Brand {
@@ -45,6 +46,7 @@ export interface Product {
   category?: Category;
   brand_id?: number;
   category_id?: number;
+  quantity?: number;
 }
 
 export interface OrderItem {
@@ -69,4 +71,39 @@ export interface Order {
   shipping_country: string;
   customer_name: string;
   customer_phone?: string;
+}
+
+export interface NewsCreate {
+  title: string;
+  content?: string;
+  image_url?: string;
+  is_active?: boolean;
+}
+
+export interface NewsUpdate {
+  title?: string;
+  content?: string;
+  image_url?: string;
+  is_active?: boolean;
+}
+
+export interface News {
+  id: number;
+  title: string;
+  content?: string;
+  image_url?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AINewsGenerateRequest {
+  topic: string;
+  keywords?: string;
+  length: string;
+}
+
+export interface AINewsGenerateResponse {
+  title: string;
+  content: string;
 }

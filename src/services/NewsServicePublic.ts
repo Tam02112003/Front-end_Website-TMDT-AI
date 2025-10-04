@@ -1,5 +1,5 @@
 import api from './api';
-import { News } from '../types'; // Assuming News type is defined in types.ts
+import { News } from '../models'; // Assuming News type is defined in models.ts
 
 export const getPublicNews = (searchQuery?: string) => {
   return api.get<News[]>('/news', { params: { search: searchQuery } });

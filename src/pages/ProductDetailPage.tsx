@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import CommentItem from '../components/CommentItem';
 import { useParams } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Grid, Button, TextField, Snackbar, List, ListItem, ListItemText, Divider, IconButton } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Grid, Button, TextField, Snackbar, List, IconButton } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import api from '../services/api';
@@ -24,7 +24,6 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [addLoading, setAddLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
-  const [quantityInCart, setQuantityInCart] = useState(0);
 
   // Image carousel state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -94,10 +93,9 @@ const ProductDetailPage = () => {
           }
         }
         console.log('DEBUG: Quantity of this product in cart (after find):', cartQuantity);
-        currentProduct = { ...currentProduct, quantity: currentProduct.quantity - cartQuantity };
+        currentProduct = { ...currentProduct, quantity: (currentProduct.quantity ?? 0) - cartQuantity };
         console.log('DEBUG: Final calculated available quantity:', currentProduct.quantity);
         setProduct(currentProduct);
-        setQuantityInCart(cartQuantity);
         setError(null);
       } catch (err) {
         setError('Failed to fetch product details.');
@@ -138,11 +136,10 @@ const ProductDetailPage = () => {
       // Update local product quantity and quantity in cart
       setProduct(prevProduct => {
         if (prevProduct) {
-          return { ...prevProduct, quantity: prevProduct.quantity - quantity };
+          return { ...prevProduct, quantity: (prevProduct.quantity ?? 0) - quantity };
         }
         return null;
       });
-      setQuantityInCart(prevQuantity => prevQuantity + quantity);
     } catch (err) {
       setFeedback({ open: true, message: 'Failed to add to cart.', severity: 'error' });
       console.error(err);
@@ -184,11 +181,6 @@ const ProductDetailPage = () => {
     } finally {
       setCommentLoading(false);
     }
-  };
-
-  const handleEditComment = (comment: Comment) => {
-    setEditingCommentId(comment.id);
-    setEditingCommentContent(comment.content);
   };
 
   const handleCancelEdit = () => {
@@ -287,7 +279,7 @@ const ProductDetailPage = () => {
     <>
       <Card>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
               {product.image_urls && product.image_urls.length > 0 ? (
                 <CardMedia
@@ -348,7 +340,7 @@ const ProductDetailPage = () => {
               </Box>
             )}
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <CardContent>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                 <Typography variant="h4" component="h1" gutterBottom>
@@ -379,7 +371,7 @@ const ProductDetailPage = () => {
               )}
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                 <Typography variant="body2" color="text.secondary">
-                  In stock: {product.quantity}
+                  In stock: {product.quantity ?? 0}
                 </Typography>
               </Box>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
@@ -392,15 +384,15 @@ const ProductDetailPage = () => {
                     }}
                     variant="outlined"
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity, parseInt(e.target.value, 10) || 1)))}
+                    onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity ?? 1, parseInt(e.target.value, 10) || 1)))}
                     sx={{ width: '80px', mr: 2 }}
-                    inputProps={{ min: 1, max: product.quantity }}
+                    inputProps={{ min: 1, max: product.quantity ?? 1 }}
                   />
                   <Button
                     variant="contained"
                     color="primary"
                     onClick={handleAddToCart}
-                    disabled={!isLoggedIn || addLoading || product.quantity === 0 || quantity > product.quantity || (product.release_date && new Date(product.release_date) > new Date())}
+                    disabled={!isLoggedIn || addLoading || (product.quantity ?? 0) === 0 || quantity > (product.quantity ?? 0) || (product.release_date && new Date(product.release_date) > new Date())}
                   >
                     {addLoading ? <CircularProgress size={24} /> : 'Add to Cart'}
                   </Button>
