@@ -62,7 +62,7 @@ const NewsPage = () => {
       ) : (
         <Grid container spacing={3}>
           {news.map((article) => (
-            <Grid xs={12} sm={6} md={4} key={article.id}>
+            <Grid item xs={12} sm={6} md={4} key={article.id} component="div">
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Link to={`/news/${article.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   {article.image_url && (

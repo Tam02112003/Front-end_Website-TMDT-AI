@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://website-tmdt-ai.onrender.com/', // Ensure this matches your backend API address
+  baseURL: import.meta.env.VITE_BACKEND_URL, // Ensure this matches your backend API address
   headers: {
     'Content-Type': 'application/json',
   },

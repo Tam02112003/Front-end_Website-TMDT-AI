@@ -21,6 +21,13 @@ const HomePage = () => {
   const [featuredError, setFeaturedError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
 
+  const handleCloseFeedback = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setFeedback(null);
+  };
+
   const handleAddToCart = async (product: Product) => {
     if (!isLoggedIn) {
       setFeedback({ open: true, message: 'Please log in to add items to your cart.', severity: 'error' });
@@ -229,7 +236,7 @@ size="large"
           ) : (
             <Grid container spacing={{ xs: 1, sm: 3 }} className="responsive-grid">
               {personalizedRecommendations.map((product) => (
-                <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2}>
+                <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2} component="div">
                   <Card
                     sx={{
                       width: 300, // Standardized width
@@ -319,7 +326,7 @@ size="large"
         ) : (
           <Grid container spacing={{ xs: 1, sm: 3 }} className="responsive-grid" justifyContent="center">
             {featuredProducts.map((product) => (
-              <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2}>
+              <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2} component="div">
                 <Card
                   sx={{
                     width: 300, // Standardized width

@@ -9,7 +9,7 @@ import CategoryService from '../services/CategoryService';
 import { useAuth } from '../context/AuthContext';
 import Countdown from '../components/Countdown';
 import ProductFilter from '../components/ProductFilter';
-import { Search, ShoppingCart, Visibility, AutoAwesome, FilterList } from '@mui/icons-material';
+import { Search, ShoppingCart, AutoAwesome } from '@mui/icons-material';
 import '../styles/responsive.css';
 
 const ProductsPage = () => {
@@ -194,7 +194,7 @@ const ProductsPage = () => {
       ) : (
         <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid" justifyContent="center">
           {products.map((product) => (
-            <Grid item key={product.id}>
+            <Grid item key={product.id} component="div">
               <Card 
                 sx={{ 
                   width: 300,
@@ -298,7 +298,7 @@ const ProductsPage = () => {
                     size="small"
                     color="primary"
                     onClick={() => handleAddToCart(product)} 
-                    disabled={!isLoggedIn || (product.release_date && new Date(product.release_date) > new Date()) || product.quantity <= 0}
+                    disabled={!isLoggedIn || (product.release_date && new Date(product.release_date) > new Date()) || (product.quantity ?? 0) <= 0}
                     startIcon={<ShoppingCart />}
                     className="touch-target"
                     sx={{ 

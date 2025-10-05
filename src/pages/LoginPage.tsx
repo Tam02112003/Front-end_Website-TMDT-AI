@@ -37,7 +37,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://127.0.0.1:8000/auth/login/google';
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/login/google`;
   };
 
   return (

@@ -279,7 +279,7 @@ const ProductDetailPage = () => {
     <>
       <Card>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} component="div">
             <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
               {product.image_urls && product.image_urls.length > 0 ? (
                 <CardMedia
@@ -340,7 +340,7 @@ const ProductDetailPage = () => {
               </Box>
             )}
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} component="div">
             <CardContent>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                 <Typography variant="h4" component="h1" gutterBottom>
@@ -386,7 +386,7 @@ const ProductDetailPage = () => {
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity ?? 1, parseInt(e.target.value, 10) || 1)))}
                     sx={{ width: '80px', mr: 2 }}
-                    inputProps={{ min: 1, max: product.quantity ?? 1 }}
+                    inputProps={{ min: 1, max: (product.quantity as number) ?? 1 }}
                   />
                   <Button
                     variant="contained"
