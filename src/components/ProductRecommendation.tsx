@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Grid, Card, CardMedia, CardContent, CardActions, Button } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, CardActions, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ProductService from '../services/ProductService';
 import { Product } from '../models';
@@ -68,9 +68,9 @@ const ProductRecommendation = ({ productId }: ProductRecommendationProps) => {
       <Typography variant="h5" gutterBottom sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
         Recommended Products
       </Typography>
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {recommendations.map((product) => (
-          <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+          <Box key={product.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 18px)' } }}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardMedia
                 component="img"
@@ -106,9 +106,9 @@ const ProductRecommendation = ({ productId }: ProductRecommendationProps) => {
                 </Button>
               </CardActions>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 };

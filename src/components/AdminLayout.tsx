@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItem, ListItemText, ListItemIcon, CircularProgress, Snackbar, Alert } from '@mui/material';
+import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItemText, ListItemIcon, CircularProgress, Snackbar, Alert, ListItemButton } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShoppingCart, People, Article, Category, ModelTraining, Discount, Image, BrandingWatermark, DeleteSweep } from '@mui/icons-material';
@@ -76,66 +76,66 @@ const AdminLayout = () => {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            <ListItem button="true" component={Link} to="/admin/orders">
+            <ListItemButton component={Link} to="/admin/orders">
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
               <ListItemText primary="Orders" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/users">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/users">
               <ListItemIcon>
                 <People />
               </ListItemIcon>
               <ListItemText primary="Users" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/news">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/news">
               <ListItemIcon>
                 <Article />
               </ListItemIcon>
               <ListItemText primary="News" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/products">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/products">
               <ListItemIcon>
                 <Category />
               </ListItemIcon>
               <ListItemText primary="Products" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/brands">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/brands">
               <ListItemIcon>
                 <BrandingWatermark />
               </ListItemIcon>
               <ListItemText primary="Brands" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/categories">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/categories">
               <ListItemIcon>
                 <Category />
               </ListItemIcon>
               <ListItemText primary="Categories" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/recommendations">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/recommendations">
               <ListItemIcon>
                 <ModelTraining />
               </ListItemIcon>
               <ListItemText primary="Recommendations" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/discounts">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/discounts">
               <ListItemIcon>
                 <Discount />
               </ListItemIcon>
               <ListItemText primary="Discounts" />
-            </ListItem>
-            <ListItem button="true" component={Link} to="/admin/images">
+            </ListItemButton>
+            <ListItemButton component={Link} to="/admin/images">
               <ListItemIcon>
                 <Image />
               </ListItemIcon>
               <ListItemText primary="Image Gallery" />
-            </ListItem>
-            <ListItem button="true" onClick={handleClearCache} disabled={clearingCache}>
+            </ListItemButton>
+            <ListItemButton onClick={handleClearCache} disabled={clearingCache}>
               <ListItemIcon>
                 {clearingCache ? <CircularProgress size={24} /> : <DeleteSweep />}
               </ListItemIcon>
               <ListItemText primary="Clear Redis Cache" />
-            </ListItem>
+            </ListItemButton>
           </List>
         </Box>
       </Drawer>

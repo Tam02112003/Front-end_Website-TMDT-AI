@@ -5,10 +5,14 @@ interface CountdownProps {
   releaseDate: string;
 }
 
+interface TimeLeft {
+  [key: string]: number;
+}
+
 const Countdown = ({ releaseDate }: CountdownProps) => {
   const calculateTimeLeft = () => {
     const difference = +new Date(releaseDate) - +new Date();
-    let timeLeft = {};
+    let timeLeft: TimeLeft = {};
 
     if (difference > 0) {
       timeLeft = {
@@ -22,7 +26,7 @@ const Countdown = ({ releaseDate }: CountdownProps) => {
     return timeLeft;
   };
 
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft);
 
   useEffect(() => {
     const timer = setTimeout(() => {

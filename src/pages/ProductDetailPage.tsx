@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import CommentItem from '../components/CommentItem';
 import { useParams } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Grid, Button, TextField, Snackbar, List, IconButton } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Button, TextField, Snackbar, List, IconButton } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import api from '../services/api';
@@ -161,7 +161,7 @@ const ProductDetailPage = () => {
         product_id: parseInt(productId),
         content: contentToPost.trim(),
         user_name: user.username, // Use username from auth context
-        parent_comment_id: parentId, // Include parent_comment_id if it's a reply
+        parent_comment_id: parentId ?? undefined, // Include parent_comment_id if it's a reply
       };
       await ProductService.createCommentForProduct(parseInt(productId), commentData);
       if (parentId) {
@@ -278,8 +278,8 @@ const ProductDetailPage = () => {
   return (
     <>
       <Card>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8} component="div">
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ width: { xs: '100%', md: 'calc(66.66% - 8px)' } }}>
             <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
               {product.image_urls && product.image_urls.length > 0 ? (
                 <CardMedia
@@ -339,8 +339,8 @@ const ProductDetailPage = () => {
                 ))}
               </Box>
             )}
-          </Grid>
-          <Grid item xs={12} md={4} component="div">
+          </Box>
+          <Box sx={{ width: { xs: '100%', md: 'calc(33.33% - 8px)' } }}>
             <CardContent>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                 <Typography variant="h4" component="h1" gutterBottom>
@@ -404,8 +404,8 @@ const ProductDetailPage = () => {
                 </Typography>
               )}
             </CardContent>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Card>
 
       {/* Product Description */}

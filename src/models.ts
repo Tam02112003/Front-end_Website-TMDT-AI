@@ -80,6 +80,7 @@ export interface Order {
   shipping_country: string;
   customer_name: string;
   customer_phone?: string;
+  shipping_phone_number?: string;
 }
 
 export interface NewsCreate {

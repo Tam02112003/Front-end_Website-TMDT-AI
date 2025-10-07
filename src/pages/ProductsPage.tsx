@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Grid, Card, CardMedia, CardContent, CircularProgress, Alert, Box, Button, CardActions, TextField, InputAdornment, Snackbar, Chip, Container, Paper } from '@mui/material';
+import { Typography, Card, CardMedia, CardContent, CircularProgress, Alert, Box, Button, CardActions, TextField, InputAdornment, Snackbar, Chip, Container, Paper } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { Product, Brand, Category } from '../models';
 import ProductService from '../services/ProductService';
@@ -192,9 +192,9 @@ const ProductsPage = () => {
           </Typography>
         </Paper>
       ) : (
-        <Grid container spacing={{ xs: 2, sm: 3 }} className="responsive-grid" justifyContent="center">
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 2, sm: 3 }, justifyContent: 'center' }} className="responsive-grid">
           {products.map((product) => (
-            <Grid item key={product.id} component="div">
+            <Box sx={{ width: 300 }}>
               <Card 
                 sx={{ 
                   width: 300,
@@ -275,7 +275,7 @@ const ProductsPage = () => {
                                           </Typography>                        <Typography 
                           variant="h6" 
                           color="error.main" 
-                          sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}
+                          sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }} 
                         >
                           {product.final_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                         </Typography>
@@ -284,55 +284,55 @@ const ProductsPage = () => {
                       <Typography 
                         variant="h6" 
                         color="primary.main" 
-                        sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}
-                      >
-                        {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                      </Typography>
-                    )}
-                  </Box>
-                </CardContent>
-                
-                <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0, gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
-                  <Button 
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    onClick={() => handleAddToCart(product)} 
-                    disabled={!isLoggedIn || (product.release_date && new Date(product.release_date) > new Date()) || (product.quantity ?? 0) <= 0}
-                    startIcon={<ShoppingCart />}
-                    className="touch-target"
-                    sx={{ 
-                      flex: { xs: 'none', sm: 1 },
-                      width: { xs: '100%', sm: 'auto' },
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 600
-                    }}
-                  >
-                    Add to Cart
-                  </Button>
-                  <Button 
-                    variant="outlined"
-                    size="small"
-                    color="secondary"
-                    onClick={() => handleTryOn(product.image_urls?.[0] || '')}
-                    startIcon={<AutoAwesome />}
-                    className="touch-target"
-                    sx={{ 
-                      flex: { xs: 'none', sm: 1 },
-                      width: { xs: '100%', sm: 'auto' },
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 600
-                    }}
-                  >
-                    Try On
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                        sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }} 
+                        >
+                          {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                        </Typography>
+                      )}
+                    </Box>
+                  </CardContent>
+                  
+                  <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0, gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
+                    <Button 
+                      variant="contained"
+                      size="small"
+                      color="primary"
+                      onClick={() => handleAddToCart(product)} 
+                      disabled={!isLoggedIn || (product.release_date && new Date(product.release_date) > new Date()) || (product.quantity ?? 0) <= 0}
+                      startIcon={<ShoppingCart />}
+                      className="touch-target"
+                      sx={{ 
+                        flex: { xs: 'none', sm: 1 },
+                        width: { xs: '100%', sm: 'auto' },
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
+                    <Button 
+                      variant="outlined"
+                      size="small"
+                      color="secondary"
+                      onClick={() => handleTryOn(product.image_urls?.[0] || '')}
+                      startIcon={<AutoAwesome />}
+                      className="touch-target"
+                      sx={{ 
+                        flex: { xs: 'none', sm: 1 },
+                        width: { xs: '100%', sm: 'auto' },
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600
+                      }}
+                    >
+                      Try On
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Box>
+            ))}
+          </Box>
       )}
 
       {feedback && (

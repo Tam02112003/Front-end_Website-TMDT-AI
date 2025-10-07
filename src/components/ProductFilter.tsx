@@ -1,5 +1,5 @@
 import { Brand, Category } from '../models';
-import { TextField, MenuItem, Grid, Paper, Typography } from '@mui/material';
+import { TextField, MenuItem, Paper, Typography, Box } from '@mui/material';
 
 interface ProductFilterProps {
   brands: Brand[];
@@ -32,8 +32,8 @@ const ProductFilter = ({ brands, categories, filters, onFilterChange }: ProductF
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
       <Typography variant="h6" gutterBottom>Filters</Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={4}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(33.33% - 10.66px)' } }}>
           <TextField
             select
             label="Brand"
@@ -49,8 +49,8 @@ const ProductFilter = ({ brands, categories, filters, onFilterChange }: ProductF
               </MenuItem>
             ))}
           </TextField>
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(33.33% - 10.66px)' } }}>
           <TextField
             select
             label="Category"
@@ -66,8 +66,8 @@ const ProductFilter = ({ brands, categories, filters, onFilterChange }: ProductF
               </MenuItem>
             ))}
           </TextField>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(16.66% - 13.33px)' } }}>
           <TextField
             label="Min Price"
             type="number"
@@ -75,8 +75,8 @@ const ProductFilter = ({ brands, categories, filters, onFilterChange }: ProductF
             value={filters.min_price || ''}
             onChange={handleMinPriceChange}
           />
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(16.66% - 13.33px)' } }}>
           <TextField
             label="Max Price"
             type="number"
@@ -84,8 +84,8 @@ const ProductFilter = ({ brands, categories, filters, onFilterChange }: ProductF
             value={filters.max_price || ''}
             onChange={handleMaxPriceChange}
           />
-        </Grid>
-      </Grid>
+          </Box>
+      </Box>
     </Paper>
   );
 };

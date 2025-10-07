@@ -97,10 +97,20 @@ const AdminNewsPage = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, checked, type } = e.target;
+    const { name, value } = e.target;
     setCurrentNews((prevNews) => {
       if (prevNews) {
-        return { ...prevNews, [name]: type === 'checkbox' ? checked : value };
+        return { ...prevNews, [name]: value };
+      }
+      return null;
+    });
+  };
+
+  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setCurrentNews((prevNews) => {
+      if (prevNews) {
+        return { ...prevNews, [name]: checked };
       }
       return null;
     });
@@ -258,7 +268,7 @@ const AdminNewsPage = () => {
                 control={
                   <Switch
                     checked={currentNews.is_active}
-                    onChange={handleInputChange}
+                    onChange={handleSwitchChange}
                     name="is_active"
                     color="primary"
                   />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, InputAdornment, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, InputAdornment, Select, MenuItem, InputLabel, FormControl, SelectChangeEvent } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -85,7 +85,7 @@ const AdminProductPage = () => {
     };
   
     const handleCreateClick = () => {
-      setCurrentProduct({ id: 0, name: '', description: '', price: 0, quantity: 0, image_urls: [], is_active: true, created_at: '', updated_at: '', release_date: null });
+      setCurrentProduct({ id: 0, name: '', description: '', price: 0, quantity: 0, image_urls: [], is_active: true, created_at: '', updated_at: '', release_date: undefined });
       setIsEditing(false);
       setOpenDialog(true);
     };
@@ -142,7 +142,7 @@ const AdminProductPage = () => {
       setCurrentProduct(null);
     };
   
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       setCurrentProduct((prevProduct) => {
         if (prevProduct) {
@@ -150,6 +150,26 @@ const AdminProductPage = () => {
         }
         return null;
       });
+    };
+
+    const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        setCurrentProduct((prevProduct) => {
+            if (prevProduct) {
+                return { ...prevProduct, [name]: checked };
+            }
+            return null;
+        });
+    };
+
+    const handleSelectChange = (e: SelectChangeEvent<string | number>) => {
+        const { name, value } = e.target;
+        setCurrentProduct((prevProduct) => {
+            if (prevProduct) {
+                return { ...prevProduct, [name]: value };
+            }
+            return null;
+        });
     };
   
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -327,7 +347,7 @@ const AdminProductPage = () => {
                   <Select
                     name="brand_id"
                     value={currentProduct.brand_id || ''}
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                   >
                     {brands.map((brand) => (
                       <MenuItem key={brand.id} value={brand.id}>
@@ -341,7 +361,7 @@ const AdminProductPage = () => {
                   <Select
                     name="category_id"
                     value={currentProduct.category_id || ''}
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                   >
                     {categories.map((category) => (
                       <MenuItem key={category.id} value={category.id}>
@@ -357,12 +377,12 @@ const AdminProductPage = () => {
                     onChange={(newValue) => {
                       setCurrentProduct((prevProduct) => {
                         if (prevProduct) {
-                          return { ...prevProduct, release_date: newValue ? newValue.toISOString() : null };
+                          return { ...prevProduct, release_date: newValue ? newValue.toISOString() : undefined };
                         }
                         return null;
                       });
                     }}
-                    renderInput={(params) => <TextField {...params} />}
+                    slotProps={{ textField: { fullWidth: true, variant: 'standard' } }}
                   />
                 </LocalizationProvider>
                 <ImageUploader onImageUpload={handleImageUploads} initialImageUrls={currentProduct.image_urls || []} />
@@ -370,7 +390,7 @@ const AdminProductPage = () => {
                   control={
                     <Switch
                       checked={currentProduct.is_active}
-                      onChange={handleInputChange}
+                      onChange={handleSwitchChange}
                       name="is_active"
                       color="primary"
                     />

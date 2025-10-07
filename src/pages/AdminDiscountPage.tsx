@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -107,10 +107,30 @@ const AdminDiscountPage = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, checked, type } = e.target;
+    const { name, value } = e.target;
     setCurrentDiscount((prevDiscount) => {
       if (prevDiscount) {
-        return { ...prevDiscount, [name]: type === 'checkbox' ? checked : value };
+        return { ...prevDiscount, [name]: value };
+      }
+      return null;
+    });
+  };
+
+  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setCurrentDiscount((prevDiscount) => {
+      if (prevDiscount) {
+        return { ...prevDiscount, [name]: checked };
+      }
+      return null;
+    });
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string | number>) => {
+    const { name, value } = e.target;
+    setCurrentDiscount((prevDiscount) => {
+      if (prevDiscount) {
+        return { ...prevDiscount, [name]: value };
       }
       return null;
     });
@@ -259,7 +279,7 @@ const AdminDiscountPage = () => {
                     name="product_id"
                     value={currentDiscount.product_id || ''}
                     label="Product (optional)"
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                   >
                     <MenuItem value=""><em>None</em></MenuItem>
                     {products.map((product) => (
@@ -273,7 +293,7 @@ const AdminDiscountPage = () => {
                   control={
                     <Switch
                       checked={currentDiscount.is_active}
-                      onChange={handleInputChange}
+                      onChange={handleSwitchChange}
                       name="is_active"
                       color="primary"
                     />

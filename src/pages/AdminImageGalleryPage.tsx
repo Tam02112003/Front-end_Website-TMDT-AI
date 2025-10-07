@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Grid, Card, CardMedia, CardActions, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardActions, Button, Checkbox, FormControlLabel } from '@mui/material';
 import UploadService from '../services/UploadService';
 
 interface ImageResource {
@@ -101,9 +101,9 @@ const AdminImageGalleryPage = () => {
       {images.length === 0 ? (
         <Typography>No images found.</Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           {images.map((image) => (
-            <Grid item key={image.public_id} xs={12} sm={6} md={4} lg={3}>
+            <Box key={image.public_id} sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 18px)' } }}>
               <Card sx={{ position: 'relative' }}>
                 <FormControlLabel
                   control={
@@ -141,9 +141,9 @@ const AdminImageGalleryPage = () => {
                   </Button>
                 </CardActions>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
     </Box>
   );

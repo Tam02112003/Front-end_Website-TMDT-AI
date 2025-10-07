@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Typography, Box, CircularProgress, Alert, Paper, TextField, Button } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import UserService from '../services/UserService';
-import { User } from '../models';
+
 import ImageUploader from '../components/ImageUploader';
 
 const ProfilePage = () => {

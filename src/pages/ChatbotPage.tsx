@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, TextField, Button, Typography, Paper, CircularProgress, IconButton } from '@mui/material';
+import { Box, TextField, Typography, Paper, CircularProgress, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ChatbotService from '../services/ChatbotService';
 import { v4 as uuidv4 } from 'uuid';

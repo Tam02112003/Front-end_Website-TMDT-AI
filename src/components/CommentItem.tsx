@@ -1,7 +1,6 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { Typography, Box, CircularProgress, Button, TextField, ListItem, ListItemText, Avatar } from '@mui/material';
-import { Comment, CommentCreate } from '../types';
-import ProductService from '../services/ProductService';
+import { Comment } from '../types';
 
 interface CommentItemProps {
   comment: Comment & { children?: Comment[] };

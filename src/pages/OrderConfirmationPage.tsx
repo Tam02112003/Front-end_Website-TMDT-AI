@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Box, Typography, Button } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useNavigate } from 'react-router-dom';

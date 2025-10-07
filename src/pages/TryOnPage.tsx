@@ -1,44 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Box, Typography, Button, CircularProgress, Alert, Grid, Card, CardMedia, CardActionArea } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert } from '@mui/material';
 import { performTryOn } from '../services/TryOnService';
-import api from '../services/api'; // Import the API client
-import ProductService from '../services/ProductService'; // Import ProductService
-import { Product } from '../models'; // Assuming Product model is defined here
 
 const TryOnPage = () => {
   const location = useLocation();
   const { productImageUrl } = location.state || {};
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProductImage, setSelectedProductImage] = useState<string | null>(productImageUrl || null);
+  const [selectedProductImage] = useState<string | null>(productImageUrl || null);
   const [selectedUserImage, setSelectedUserImage] = useState<string | null>(null);
-  const [userAvatarFile, setUserAvatarFile] = useState<File | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // If productImageUrl is received, no need to fetch all products
-    if (productImageUrl) {
-      setLoading(false);
-      return;
-    }
 
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await ProductService.getAllProducts();
-        setProducts(response.data);
-      } catch (err) {
-        setError('Failed to fetch products.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [productImageUrl]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

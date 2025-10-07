@@ -8,6 +8,7 @@ import '../styles/responsive.css';
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      await AuthService.register({ username, email, password });
+      await AuthService.register({ username, full_name: fullName, email, password });
       setSuccess('Registration successful! You will be redirected to login.');
       setTimeout(() => {
         navigate('/login');
@@ -101,6 +102,24 @@ const RegisterPage = () => {
             margin="normal"
             required
             fullWidth
+            id="fullName"
+            label="Full Name"
+            name="fullName"
+            autoComplete="name"
+            className="touch-target"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
             id="email"
             label="Email Address"
             name="email"
@@ -151,7 +170,7 @@ const RegisterPage = () => {
             type="submit"
             fullWidth
             variant="contained"
-            size={{ xs: 'medium', sm: 'large' }}
+            size="large"
             disabled={loading}
             className="touch-target"
             startIcon={loading ? <CircularProgress size={20} /> : <PersonAdd />}

@@ -2,13 +2,7 @@ import { createContext, useState, useEffect, useContext, ReactNode } from 'react
 import { jwtDecode } from 'jwt-decode';
 import api from '../services/api';
 
-// WORKAROUND: Defining User interface directly in this file to avoid import issues.
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  is_admin: boolean;
-}
+import { User } from '../models';
 
 interface AuthContextType {
   user: User | null;

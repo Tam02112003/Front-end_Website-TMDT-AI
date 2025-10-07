@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, useEffect } from 'react';
-import { Box, Button, CircularProgress, Alert, Typography, IconButton } from '@mui/material';
+import { Box, Button, CircularProgress, Alert, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import UploadService from '../services/UploadService';
 

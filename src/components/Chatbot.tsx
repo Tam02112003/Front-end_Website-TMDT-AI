@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, TextField, Button, Typography, Paper, CircularProgress, IconButton, Fab } from '@mui/material';
+import { Box, TextField, Typography, Paper, CircularProgress, IconButton, Fab } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';

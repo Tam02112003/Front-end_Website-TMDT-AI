@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Button, Paper, Grid, TextField, Divider } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Button, Paper, TextField, Divider } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import CartService from '../services/CartService';
 import api from '../services/api';
@@ -101,14 +101,14 @@ const CheckoutPage = () => {
 
       const response = await OrderService.placeOrder(orderData);
       console.log('Order placed successfully:', response.data);
-      const orderCode = response.data.order_code;
+      const orderId = response.data.order_id;
 
       if (paymentMethod === 'vnpay') {
         // For VNPay, initiate payment and redirect
         const vnpayRequest = {
-          order_id: orderCode,
-          amount: Math.round(parseFloat(calculateTotal()) * 100), // VNPay amount is in cents/smallest unit
-          order_desc: `Payment for order ${orderCode}`,
+          order_id: String(orderId),
+          amount: Math.round(parseFloat(calculateTotal().toString()) * 100), // VNPay amount is in cents/smallest unit
+          order_desc: `Payment for order ${orderId}`,
           language: 'vn',
         };
         // The backend /payment/vnpay/create endpoint returns a RedirectResponse (303).
@@ -124,7 +124,7 @@ const CheckoutPage = () => {
       } else {
         // For COD, navigate to the new result page
         await CartService.clearCart(); // Clear the cart after successful order
-        navigate(`/order-result?success=true&orderId=${orderCode}`); // Navigate to the result page
+        navigate(`/order-result?success=true&orderId=${orderId}`); // Navigate to the result page
         setError(null); // Clear any previous errors
       }
     } catch (err) {
@@ -159,112 +159,106 @@ const CheckoutPage = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Checkout
-      </Typography>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={7}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Shipping Address
-            </Typography>
-            <TextField
-              fullWidth
-              label="Address"
-              name="address"
-              value={shippingAddress.address}
-              onChange={handleAddressChange}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="City"
-              name="city"
-              value={shippingAddress.city}
-              onChange={handleAddressChange}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Postal Code"
-              name="postalCode"
-              value={shippingAddress.postalCode}
-              onChange={handleAddressChange}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Country"
-              name="country"
-              value={shippingAddress.country}
-              onChange={handleAddressChange}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Phone Number"
-              name="phoneNumber"
-              value={shippingAddress.phoneNumber}
-              onChange={handleAddressChange}
-              margin="normal"
-              required
-            />
-          </Paper>
-          <Paper sx={{ p: 3, mt: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Payment Method
-            </Typography>
-            <FormControl component="fieldset" margin="normal">
-              <FormLabel component="legend">Select a payment method</FormLabel>
-              <RadioGroup
-                aria-label="payment-method"
-                name="paymentMethod"
-                value={paymentMethod}
-                onChange={handlePaymentMethodChange}
-              >
-                <FormControlLabel value="cod" control={<Radio />} label="Cash on Delivery" />
-                <FormControlLabel value="vnpay" control={<Radio />} label="VNPay" />
-              </RadioGroup>
-            </FormControl>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={5}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Order Summary
-            </Typography>
-            <Divider sx={{ my: 2 }} />
-            {cartItems.map((item) => (
-              <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2">{item.product_details.name} (x{item.quantity})</Typography>
-                <Typography variant="body2">{((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
-              </Box>
-            ))}
-            <Divider sx={{ my: 2 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-              <Typography variant="h6">Total</Typography>
-              <Typography variant="h6">{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 3 }}
-              onClick={handlePlaceOrder}
-              disabled={!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country}
-            >
-              Place Order
-            </Button>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
-  );
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  <Box sx={{ width: { xs: '100%', md: 'calc(58.33% - 12px)' } }}>
+                    <Paper sx={{ p: 3 }}>
+                      <Typography variant="h5" gutterBottom>
+                        Shipping Address
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        label="Address"
+                        name="address"
+                        value={shippingAddress.address}
+                        onChange={handleAddressChange}
+                        margin="normal"
+                        required
+                      />
+                      <TextField
+                        fullWidth
+                        label="City"
+                        name="city"
+                        value={shippingAddress.city}
+                        onChange={handleAddressChange}
+                        margin="normal"
+                        required
+                      />
+                      <TextField
+                        fullWidth
+                        label="Postal Code"
+                        name="postalCode"
+                        value={shippingAddress.postalCode}
+                        onChange={handleAddressChange}
+                        margin="normal"
+                        required
+                      />
+                      <TextField
+                        fullWidth
+                        label="Country"
+                        name="country"
+                        value={shippingAddress.country}
+                        onChange={handleAddressChange}
+                        margin="normal"
+                        required
+                      />
+                      <TextField
+                        fullWidth
+                        label="Phone Number"
+                        name="phoneNumber"
+                        value={shippingAddress.phoneNumber}
+                        onChange={handleAddressChange}
+                        margin="normal"
+                        required
+                      />
+                    </Paper>
+                    <Paper sx={{ p: 3, mt: 3 }}>
+                      <Typography variant="h5" gutterBottom>
+                        Payment Method
+                      </Typography>
+                      <FormControl component="fieldset" margin="normal">
+                        <FormLabel component="legend">Select a payment method</FormLabel>
+                        <RadioGroup
+                          aria-label="payment-method"
+                          name="paymentMethod"
+                          value={paymentMethod}
+                          onChange={handlePaymentMethodChange}
+                        >
+                          <FormControlLabel value="cod" control={<Radio />} label="Cash on Delivery" />
+                          <FormControlLabel value="vnpay" control={<Radio />} label="VNPay" />
+                        </RadioGroup>
+                      </FormControl>
+                    </Paper>
+                  </Box>
+                  <Box sx={{ width: { xs: '100%', md: 'calc(41.66% - 12px)' } }}>
+                    <Paper sx={{ p: 3 }}>
+                      <Typography variant="h5" gutterBottom>
+                        Order Summary
+                      </Typography>
+                      <Divider sx={{ my: 2 }} />
+                      {cartItems.map((item) => (
+                        <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">{item.product_details.name} (x{item.quantity})</Typography>
+                          <Typography variant="body2">{((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+                        </Box>
+                      ))}
+                      <Divider sx={{ my: 2 }} />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                        <Typography variant="h6">Total</Typography>
+                        <Typography variant="h6">{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+                      </Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: 3 }}
+                        onClick={handlePlaceOrder}
+                        disabled={!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country}
+                      >
+                        Place Order
+                      </Button>
+                    </Paper>
+                  </Box>
+                </Box>  );
 };
 
 export default CheckoutPage;

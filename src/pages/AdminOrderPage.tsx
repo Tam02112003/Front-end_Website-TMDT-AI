@@ -1,22 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Select, MenuItem, TextField, InputAdornment } from '@mui/material';
+import { Order, OrderSummary } from '../models';
 import OrderService from '../services/OrderService';
 import OrderDetail from '../components/OrderDetail';
 
-// This interface represents a single order in the list
-interface OrderSummary {
-  id: number;
-  user_id: number;
-  total_amount: number; // Changed from total_price
-  status: string;
-  created_at: string;
-  order_code: string;
-}
 
-// This interface represents the full order with items
-interface Order extends OrderSummary {
-  items: any[]; // Changed from order_items and simplified for now
-}
 
 const AdminOrderPage = () => {
   const [orders, setOrders] = useState<OrderSummary[]>([]);

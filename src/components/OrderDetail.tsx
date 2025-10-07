@@ -1,4 +1,4 @@
-import { Typography, Box, Paper, Grid, Divider } from '@mui/material';
+import { Typography, Box, Paper, Divider } from '@mui/material';
 import { Order } from '../models'; // Assuming Order model is defined in models.ts
 
 // Helper function to validate URL
@@ -22,22 +22,22 @@ const OrderDetail = ({ order }: OrderDetailProps) => {
       <Typography variant="h5" gutterBottom>
         Order Details
       </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
           <Typography><strong>Order Code:</strong> {order.order_code}</Typography>
           <Typography><strong>Date:</strong> {new Date(order.created_at).toLocaleDateString()}</Typography>
           <Typography><strong>Customer:</strong> {order.customer_name}</Typography>
           <Typography><strong>Phone:</strong> {order.shipping_phone_number || order.customer_phone || 'N/A'}</Typography>
-        </Grid>
-        <Grid item xs={12} sm={6}>
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
           <Typography><strong>Total:</strong> {order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
           <Typography><strong>Status:</strong> {order.status}</Typography>
           <Typography><strong>Shipping Address:</strong></Typography>
           <Typography>{order.shipping_address}</Typography>
           <Typography>{order.shipping_city}, {order.shipping_postal_code}</Typography>
           <Typography>{order.shipping_country}</Typography>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
       <Divider sx={{ my: 2 }} />
       <Typography variant="h6" gutterBottom>
         Items

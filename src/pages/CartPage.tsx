@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, Button, Paper, Grid, Divider, Container, Card, CardContent } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, Button, Paper, Divider, Container, Card, CardContent } from '@mui/material';
 import { Add, Remove, Delete, ShoppingCart, ArrowForward } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -45,7 +45,7 @@ const CartPage = () => {
       console.log('Raw Cart API Response:', response.data.cart);
 
       const cartItemsWithProductDetails = await Promise.all(
-        response.data.cart.map(async (cartItem) => {
+        response.data.cart.map(async (cartItem: CartItem) => {
           const productResponse = await api.get<Product>(`/products/${cartItem.product_id}`);
           return { ...cartItem, product_details: productResponse.data };
         })
@@ -181,8 +181,8 @@ const CartPage = () => {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={{ xs: 2, md: 4 }}>
-          <Grid item xs={12} lg={8}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 2, md: 4 } }}>
+          <Box sx={{ width: { xs: '100%', lg: 'calc(66.66% - 16px)' } }}>
             <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <List sx={{ p: 0 }}>
                 {items.map((item, index) => (
@@ -260,9 +260,9 @@ const CartPage = () => {
                 ))}
               </List>
             </Paper>
-          </Grid>
+          </Box>
           
-          <Grid item xs={12} lg={4}>
+          <Box sx={{ width: { xs: '100%', lg: 'calc(33.33% - 16px)' } }}>
             <Card sx={{ borderRadius: 3, position: { xs: 'static', lg: 'sticky' }, top: 24 }}>
               <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
@@ -314,8 +314,8 @@ const CartPage = () => {
                 </Button>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       )}
     </Container>
   );

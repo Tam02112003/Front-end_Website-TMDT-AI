@@ -23,7 +23,6 @@ import AdminRecommendationPage from './pages/AdminRecommendationPage';
 import AdminDiscountPage from './pages/AdminDiscountPage';
 import NewsPage from './pages/NewsPage';
 import NewsDetailPage from './pages/NewsDetailPage';
-import ChatbotPage from './pages/ChatbotPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminImageGalleryPage from './pages/AdminImageGalleryPage';
 
@@ -59,7 +58,6 @@ function App() {
           <Route path="order-confirmation" element={<OrderConfirmationPage />} />
           <Route path="order-result" element={<OrderResultPage />} />
           <Route path="orders" element={<OrderHistoryPage />} />
-
           <Route path="news" element={<NewsPage />} />
           <Route path="news/:newsId" element={<NewsDetailPage />} />
           <Route path="profile" element={<ProfilePage />} />

@@ -1,18 +1,17 @@
-import { Typography, Button, Container, Grid, Paper, Box, CircularProgress, Alert, Card, CardContent, CardMedia, CardActions, Chip } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Typography, Button, Container, Paper, Box, CircularProgress, Alert, Card, CardContent, CardMedia, CardActions, Chip, Snackbar } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import RecommendationService from '../services/RecommendationService';
 import ProductService from '../services/ProductService';
 import { useAuth } from '../context/AuthContext';
 import { Product } from '../models';
-import { TrendingUp, ShoppingBag, AutoAwesome, Visibility, ShoppingCart } from '@mui/icons-material';
+import { TrendingUp, ShoppingBag, AutoAwesome } from '@mui/icons-material';
 import Countdown from '../components/Countdown';
-import CartService from '../services/CartService';
+
 import '../styles/responsive.css';
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
-  const navigate = useNavigate();
   const [personalizedRecommendations, setPersonalizedRecommendations] = useState<Product[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [recLoading, setRecLoading] = useState<boolean>(true);
@@ -21,31 +20,14 @@ const HomePage = () => {
   const [featuredError, setFeaturedError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
 
-  const handleCloseFeedback = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleCloseFeedback = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
     setFeedback(null);
   };
 
-  const handleAddToCart = async (product: Product) => {
-    if (!isLoggedIn) {
-      setFeedback({ open: true, message: 'Please log in to add items to your cart.', severity: 'error' });
-      return;
-    }
-    try {
-      await CartService.addToCart(product.id, 1);
-      setFeedback({ open: true, message: 'Added to cart successfully!', severity: 'success' });
-    } catch (err) {
-      setFeedback({ open: true, message: 'Failed to add to cart.', severity: 'error' });
-      console.error(err);
-    }
-  };
 
-  const handleTryOn = (productImageUrl: string) => {
-    console.log('Try On clicked for:', productImageUrl);
-    navigate('/try-on', { state: { productImageUrl } });
-  };
 
   useEffect(() => {
     const fetchPersonalizedRecommendations = async () => {
@@ -234,9 +216,9 @@ size="large"
               </Button>
             </Paper>
           ) : (
-            <Grid container spacing={{ xs: 1, sm: 3 }} className="responsive-grid">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 3 } }} className="responsive-grid">
               {personalizedRecommendations.map((product) => (
-                <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2} component="div">
+                <Box key={product.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 4px)', md: 'calc(33.33% - 8px)', lg: 'calc(25% - 9px)', xl: 'calc(16.66% - 10px)' } }}>
                   <Card
                     sx={{
                       width: 300, // Standardized width
@@ -296,9 +278,9 @@ size="large"
                       {/* Action buttons removed */}
                     </CardActions>
                   </Card>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+                </Box>
           )}
         </Box>
       )}
@@ -324,9 +306,9 @@ size="large"
             </Typography>
           </Paper>
         ) : (
-          <Grid container spacing={{ xs: 1, sm: 3 }} className="responsive-grid" justifyContent="center">
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 3 }, justifyContent: 'center' }} className="responsive-grid">
             {featuredProducts.map((product) => (
-              <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} xl={2} component="div">
+                <Box key={product.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 4px)', md: 'calc(33.33% - 8px)', lg: 'calc(25% - 9px)', xl: 'calc(16.66% - 10px)' } }}>
                 <Card
                   sx={{
                     width: 300, // Standardized width
@@ -418,10 +400,9 @@ size="large"
                     {/* Action buttons removed */}
                   </CardActions>
                 </Card>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
-        )}
+                        </Box>        )}
       </Box>
       </>
       {feedback && (

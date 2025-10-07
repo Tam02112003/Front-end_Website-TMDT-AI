@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, List, ListItem, ListItemText, Paper, Grid, Button, TextField, InputAdornment } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, List, ListItem, ListItemText, Paper, Button, TextField, InputAdornment } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OrderService from '../services/OrderService';
@@ -104,25 +104,25 @@ const OrderHistoryPage = () => {
           {orders.map((order) => (
             <Paper key={order.id} sx={{ mb: 2 }}>
               <ListItem>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} sm={2} component="div">
-                    <ListItemText primary="Order Code" secondary={order.order_code} />
-                  </Grid>
-                  <Grid item xs={12} sm={3} component="div">
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+                  <Box sx={{ width: { xs: '100%', sm: 'calc(25% - 8px)' } }}>
                     <ListItemText primary="Date" secondary={new Date(order.created_at).toLocaleDateString()} />
-                  </Grid>
-                  <Grid item xs={12} sm={2} component="div">
+                  </Box>
+                  <Box sx={{ width: { xs: '100%', sm: 'calc(16.66% - 8px)' } }}>
+                    <ListItemText primary="Order Code" secondary={order.order_code} />
+                  </Box>
+                  <Box sx={{ width: { xs: '100%', sm: 'calc(16.66% - 8px)' } }}>
                     <ListItemText primary="Total" secondary={`${order.total_amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`} />
-                  </Grid>
-                  <Grid item xs={12} sm={3} component="div">
+                  </Box>
+                  <Box sx={{ width: { xs: '100%', sm: 'calc(25% - 8px)' } }}>
                     <ListItemText primary="Status" secondary={order.status} />
-                  </Grid>
-                  <Grid item xs={12} sm={2} component="div">
+                  </Box>
+                  <Box sx={{ width: { xs: '100%', sm: 'calc(16.66% - 8px)' } }}>
                     <Button variant="contained" size="small" onClick={() => handleViewDetails(order.order_code)}>
                       View Details
                     </Button>
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               </ListItem>
             </Paper>
           ))}

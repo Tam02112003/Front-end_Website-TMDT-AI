@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Grid, Card, CardContent, TextField, InputAdornment, CardMedia } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardContent, TextField, InputAdornment, CardMedia } from '@mui/material';
 import { getPublicNews } from '../services/NewsServicePublic';
 import { News } from '../models';
 import { Link } from 'react-router-dom';
@@ -60,9 +60,9 @@ const NewsPage = () => {
       {news.length === 0 && !loading ? (
         <Typography>No news articles found.</Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           {news.map((article) => (
-            <Grid item xs={12} sm={6} md={4} key={article.id} component="div">
+            <Box key={article.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.33% - 16px)' } }}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Link to={`/news/${article.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   {article.image_url && (
@@ -83,9 +83,9 @@ const NewsPage = () => {
                   </CardContent>
                 </Link>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
     </Box>
   );
