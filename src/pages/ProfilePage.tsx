@@ -40,17 +40,9 @@ const ProfilePage = () => {
       }
     };
 
-    if (user) {
-        setFormData({
-          phone_number: user.phone_number || '',
-          avatar_url: user.avatar_url || '',
-        });
-        setOriginalPhoneNumber(user.phone_number || '');
-        setLoading(false);
-    } else {
-        fetchUser();
-    }
-  }, [user, setUser]);
+    fetchUser();
+
+  }, [setUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
