@@ -74,7 +74,7 @@ const CheckoutPage = () => {
       const interval = setInterval(async () => {
         try {
           const response = await api.get(`/orders/${pollingOrderId}/status`);
-          if (response.data.status === 'PAID') {
+          if (response.data.status === 'paid') { // CORRECTED: Check for lowercase 'paid'
             clearInterval(interval);
             setIsPolling(false);
             await CartService.clearCart();
