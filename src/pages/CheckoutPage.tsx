@@ -74,14 +74,14 @@ const CheckoutPage = () => {
       const interval = setInterval(async () => {
         try {
           const response = await api.get(`/orders/${pollingOrderId}/status`);
-          if (response.data.status === 'paid') { // CORRECTED: Check for lowercase 'paid'
+          if (response.data.status === 'paid') {
             clearInterval(interval);
             setIsPolling(false);
             await CartService.clearCart();
             navigate(`/order-result?success=true&orderId=${pollingOrderId}`);
           }
         } catch (err) {
-          console.error('Polling for order status failed:', err);
+          console.error('Polling for order status or clearing cart failed:', err);
         }
       }, 3000); // Poll every 3 seconds
 
@@ -124,21 +124,9 @@ const CheckoutPage = () => {
       };
 
       const response = await OrderService.placeOrder(orderData);
-      const orderId = response.data.order_code; // Use order_code from response
+      const orderId = response.data.order_code;
 
-      if (paymentMethod === 'vnpay') {
-        const vnpayRequest = {
-          order_id: orderId,
-          amount: Math.round(calculateTotal()),
-          order_desc: `Payment for order ${orderId}`,
-        };
-        const vnpayRedirectResponse = await api.post('/payment/vnpay/create', vnpayRequest);
-        if (vnpayRedirectResponse.data?.payment_url) {
-          window.location.href = vnpayRedirectResponse.data.payment_url;
-        } else {
-          throw new Error("VNPay redirect URL not found.");
-        }
-      } else if (paymentMethod === 'sepay') {
+      if (paymentMethod === 'sepay') {
         const configResponse = await api.get('/payment/sepay/config');
         const { bankName, accountNumber } = configResponse.data;
         const totalAmount = Math.round(calculateTotal());
@@ -151,8 +139,14 @@ const CheckoutPage = () => {
         setIsPolling(true);
 
       } else { // COD
-        await CartService.clearCart();
-        navigate(`/order-result?success=true&orderId=${orderId}`);
+        try {
+          await CartService.clearCart();
+          navigate(`/order-result?success=true&orderId=${orderId}`);
+        } catch (clearErr) {
+          console.error('Failed to clear cart for COD order:', clearErr);
+          // Still navigate, but log the error
+          navigate(`/order-result?success=true&orderId=${orderId}&cartError=true`);
+        }
       }
     } catch (err) {
       setError('Failed to place order.');
@@ -215,7 +209,6 @@ const CheckoutPage = () => {
             <FormLabel component="legend">Select a payment method</FormLabel>
             <RadioGroup name="paymentMethod" value={paymentMethod} onChange={handlePaymentMethodChange}>
               <FormControlLabel value="cod" control={<Radio />} label="Cash on Delivery" />
-              <FormControlLabel value="vnpay" control={<Radio />} label="VNPay" />
               <FormControlLabel value="sepay" control={<Radio />} label="Sepay" />
             </RadioGroup>
           </FormControl>
