@@ -4,3 +4,6 @@ services:
     runtime: static
     buildCommand: "npm install && npm run build"
     staticPublishPath: dist
+    rewrites:
+      - source: /*
+        destination: /index.html

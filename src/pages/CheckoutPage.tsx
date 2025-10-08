@@ -4,10 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import CartService from '../services/CartService';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import OrderService from '../services/OrderService'; // Import OrderService
+import OrderService from '../services/OrderService';
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
-
 import { Product } from '../models';
+
 interface CartItem {
   id: number;
   user_id: number;
@@ -33,20 +33,24 @@ const CheckoutPage = () => {
     country: '',
     phoneNumber: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState<string>('cash_on_delivery'); // Default payment method
+  const [paymentMethod, setPaymentMethod] = useState<string>('cod');
 
+  // State for Sepay QR Code Flow
+  const [sepayQrUrl, setSepayQrUrl] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState<boolean>(false);
+  const [pollingOrderId, setPollingOrderId] = useState<string | null>(null);
+
+  // Effect to fetch cart items
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login'); // Redirect to login if not authenticated
+      navigate('/login');
       return;
     }
-
     const fetchCart = async () => {
       try {
         setLoading(true);
         const response = await CartService.getCart();
         const rawCartItems: CartItem[] = response.data.cart;
-
         const cartItemsWithProductDetails = await Promise.all(
           rawCartItems.map(async (cartItem) => {
             const productResponse = await api.get<Product>(`/products/${cartItem.product_id}`);
@@ -55,18 +59,38 @@ const CheckoutPage = () => {
         );
         setCartItems(cartItemsWithProductDetails);
       } catch (err) {
-        setError('Failed to fetch cart items or product details for checkout.');
+        setError('Failed to fetch cart items.');
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchCart();
   }, [isLoggedIn, navigate]);
 
+  // Effect for polling order status
+  useEffect(() => {
+    if (isPolling && pollingOrderId) {
+      const interval = setInterval(async () => {
+        try {
+          const response = await api.get(`/orders/${pollingOrderId}/status`);
+          if (response.data.status === 'PAID') {
+            clearInterval(interval);
+            setIsPolling(false);
+            await CartService.clearCart();
+            navigate(`/order-result?success=true&orderId=${pollingOrderId}`);
+          }
+        } catch (err) {
+          console.error('Polling for order status failed:', err);
+        }
+      }, 3000); // Poll every 3 seconds
+
+      return () => clearInterval(interval); // Cleanup on component unmount
+    }
+  }, [isPolling, pollingOrderId, navigate]);
+
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity, 0);
+    return cartItems.reduce((total, item) => total + (item.product_details.final_price ?? item.product_details.price) * item.quantity, 0);
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +108,7 @@ const CheckoutPage = () => {
       const orderItems = cartItems.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        price: item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price, // Include final price here
+        price: item.product_details.final_price ?? item.product_details.price,
       }));
 
       const orderData = {
@@ -100,32 +124,35 @@ const CheckoutPage = () => {
       };
 
       const response = await OrderService.placeOrder(orderData);
-      console.log('Order placed successfully:', response.data);
-      const orderId = response.data.order_id;
+      const orderId = response.data.order_code; // Use order_code from response
 
       if (paymentMethod === 'vnpay') {
-        // For VNPay, initiate payment and redirect
         const vnpayRequest = {
-          order_id: String(orderId),
-          amount: Math.round(parseFloat(calculateTotal().toString()) * 100), // VNPay amount is in cents/smallest unit
+          order_id: orderId,
+          amount: Math.round(calculateTotal()),
           order_desc: `Payment for order ${orderId}`,
-          language: 'vn',
         };
-        // The backend /payment/vnpay/create endpoint returns a RedirectResponse (303).
-        // Axios will follow this redirect, so the browser will be redirected to VNPay.
-        // We don't need to explicitly navigate here.
         const vnpayRedirectResponse = await api.post('/payment/vnpay/create', vnpayRequest);
-        // Manually redirect the browser to the URL provided in the response data
-        if (vnpayRedirectResponse.data && vnpayRedirectResponse.data.payment_url) {
+        if (vnpayRedirectResponse.data?.payment_url) {
           window.location.href = vnpayRedirectResponse.data.payment_url;
         } else {
-          throw new Error("VNPay redirect URL not found in response data.");
+          throw new Error("VNPay redirect URL not found.");
         }
-      } else {
-        // For COD, navigate to the new result page
-        await CartService.clearCart(); // Clear the cart after successful order
-        navigate(`/order-result?success=true&orderId=${orderId}`); // Navigate to the result page
-        setError(null); // Clear any previous errors
+      } else if (paymentMethod === 'sepay') {
+        const configResponse = await api.get('/payment/sepay/config');
+        const { bankName, accountNumber } = configResponse.data;
+        const totalAmount = Math.round(calculateTotal());
+        const description = orderId;
+
+        const qrUrl = `https://qr.sepay.vn/img?acc=${accountNumber}&bank=${bankName}&amount=${totalAmount}&des=${description}`;
+        
+        setSepayQrUrl(qrUrl);
+        setPollingOrderId(orderId);
+        setIsPolling(true);
+
+      } else { // COD
+        await CartService.clearCart();
+        navigate(`/order-result?success=true&orderId=${orderId}`);
       }
     } catch (err) {
       setError('Failed to place order.');
@@ -135,130 +162,94 @@ const CheckoutPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+  if (loading && !sepayQrUrl) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}><CircularProgress /></Box>;
   }
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;
   }
 
+  // Render QR Code view if sepayQrUrl is set
+  if (sepayQrUrl) {
+    return (
+      <Paper sx={{ p: 4, maxWidth: 500, margin: 'auto', textAlign: 'center' }}>
+        <Typography variant="h5" gutterBottom>Scan QR Code to Pay</Typography>
+        <img src={sepayQrUrl} alt="Sepay QR Code" style={{ maxWidth: '100%', height: 'auto' }} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Total Amount: {calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+          Please scan the QR code with your banking app to complete the payment.
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
+          <CircularProgress size={20} sx={{ mr: 1 }} />
+          <Typography variant="body2">Waiting for payment confirmation...</Typography>
+        </Box>
+      </Paper>
+    );
+  }
+
   if (cartItems.length === 0) {
     return (
       <Alert severity="info">
-        Your cart is empty. Please add items before checking out.
-        <Button onClick={() => navigate('/products')} sx={{ ml: 2 }}>
-          Continue Shopping
-        </Button>
+        Your cart is empty. <Button onClick={() => navigate('/products')}>Continue Shopping</Button>
       </Alert>
     );
   }
 
   return (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  <Box sx={{ width: { xs: '100%', md: 'calc(58.33% - 12px)' } }}>
-                    <Paper sx={{ p: 3 }}>
-                      <Typography variant="h5" gutterBottom>
-                        Shipping Address
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        label="Address"
-                        name="address"
-                        value={shippingAddress.address}
-                        onChange={handleAddressChange}
-                        margin="normal"
-                        required
-                      />
-                      <TextField
-                        fullWidth
-                        label="City"
-                        name="city"
-                        value={shippingAddress.city}
-                        onChange={handleAddressChange}
-                        margin="normal"
-                        required
-                      />
-                      <TextField
-                        fullWidth
-                        label="Postal Code"
-                        name="postalCode"
-                        value={shippingAddress.postalCode}
-                        onChange={handleAddressChange}
-                        margin="normal"
-                        required
-                      />
-                      <TextField
-                        fullWidth
-                        label="Country"
-                        name="country"
-                        value={shippingAddress.country}
-                        onChange={handleAddressChange}
-                        margin="normal"
-                        required
-                      />
-                      <TextField
-                        fullWidth
-                        label="Phone Number"
-                        name="phoneNumber"
-                        value={shippingAddress.phoneNumber}
-                        onChange={handleAddressChange}
-                        margin="normal"
-                        required
-                      />
-                    </Paper>
-                    <Paper sx={{ p: 3, mt: 3 }}>
-                      <Typography variant="h5" gutterBottom>
-                        Payment Method
-                      </Typography>
-                      <FormControl component="fieldset" margin="normal">
-                        <FormLabel component="legend">Select a payment method</FormLabel>
-                        <RadioGroup
-                          aria-label="payment-method"
-                          name="paymentMethod"
-                          value={paymentMethod}
-                          onChange={handlePaymentMethodChange}
-                        >
-                          <FormControlLabel value="cod" control={<Radio />} label="Cash on Delivery" />
-                          <FormControlLabel value="vnpay" control={<Radio />} label="VNPay" />
-                        </RadioGroup>
-                      </FormControl>
-                    </Paper>
-                  </Box>
-                  <Box sx={{ width: { xs: '100%', md: 'calc(41.66% - 12px)' } }}>
-                    <Paper sx={{ p: 3 }}>
-                      <Typography variant="h5" gutterBottom>
-                        Order Summary
-                      </Typography>
-                      <Divider sx={{ my: 2 }} />
-                      {cartItems.map((item) => (
-                        <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2">{item.product_details.name} (x{item.quantity})</Typography>
-                          <Typography variant="body2">{((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
-                        </Box>
-                      ))}
-                      <Divider sx={{ my: 2 }} />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                        <Typography variant="h6">Total</Typography>
-                        <Typography variant="h6">{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
-                      </Box>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        sx={{ mt: 3 }}
-                        onClick={handlePlaceOrder}
-                        disabled={!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country}
-                      >
-                        Place Order
-                      </Button>
-                    </Paper>
-                  </Box>
-                </Box>  );
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      <Box sx={{ width: { xs: '100%', md: 'calc(58.33% - 12px)' } }}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom>Shipping Address</Typography>
+          <TextField fullWidth label="Address" name="address" value={shippingAddress.address} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="City" name="city" value={shippingAddress.city} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Postal Code" name="postalCode" value={shippingAddress.postalCode} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Country" name="country" value={shippingAddress.country} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Phone Number" name="phoneNumber" value={shippingAddress.phoneNumber} onChange={handleAddressChange} margin="normal" required />
+        </Paper>
+        <Paper sx={{ p: 3, mt: 3 }}>
+          <Typography variant="h5" gutterBottom>Payment Method</Typography>
+          <FormControl component="fieldset" margin="normal">
+            <FormLabel component="legend">Select a payment method</FormLabel>
+            <RadioGroup name="paymentMethod" value={paymentMethod} onChange={handlePaymentMethodChange}>
+              <FormControlLabel value="cod" control={<Radio />} label="Cash on Delivery" />
+              <FormControlLabel value="vnpay" control={<Radio />} label="VNPay" />
+              <FormControlLabel value="sepay" control={<Radio />} label="Sepay" />
+            </RadioGroup>
+          </FormControl>
+        </Paper>
+      </Box>
+      <Box sx={{ width: { xs: '100%', md: 'calc(41.66% - 12px)' } }}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom>Order Summary</Typography>
+          <Divider sx={{ my: 2 }} />
+          {cartItems.map((item) => (
+            <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">{item.product_details.name} (x{item.quantity})</Typography>
+              <Typography variant="body2">{(item.product_details.final_price ?? item.product_details.price).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+            </Box>
+          ))}
+          <Divider sx={{ my: 2 }} />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Typography variant="h6">Total</Typography>
+            <Typography variant="h6">{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 3 }}
+            onClick={handlePlaceOrder}
+            disabled={!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country}
+          >
+            Place Order
+          </Button>
+        </Paper>
+      </Box>
+    </Box>
+  );
 };
 
 export default CheckoutPage;
