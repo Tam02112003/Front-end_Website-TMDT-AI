@@ -31,7 +31,7 @@ const AdminDiscountPage = () => {
     try {
       setLoading(true);
       const [discountResponse, productResponse] = await Promise.all([
-        showDeleted ? DiscountService.getDeletedDiscounts() : DiscountService.getAllDiscounts(),
+        showDeleted ? DiscountService.getDeletedDiscounts() : DiscountService.getAllDiscounts(undefined, true), // include_expired=true for admin
         ProductService.getAllProducts(),
       ]);
       setDiscounts(discountResponse.data);
