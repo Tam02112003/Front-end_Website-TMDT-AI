@@ -147,7 +147,12 @@ const Chatbot = () => {
     li: ({ children }: any) => <Typography component="li" variant="body2" sx={{ mb: 0.25 }}>{children}</Typography>,
     a: ({ children, href }: any) => <MuiLink href={href} target="_blank" rel="noopener noreferrer" sx={{ color: colors.jadeBright }}>{children}</MuiLink>,
     img: ({ src, alt }: any) => (
-      <Box component="img" src={src} alt={alt || ''} sx={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', mt: 1, display: 'block' }} />
+      <Box
+        component="img"
+        src={src}
+        alt={alt || ''}
+        sx={{ maxWidth: '100%', width: 160, height: 'auto', borderRadius: '8px', mt: 1, display: 'block' }}
+      />
     ),
     hr: () => <Box component="hr" sx={{ border: 'none', borderTop: `1px solid ${colors.border}`, my: 1 }} />,
     code: ({ children }: any) => (
@@ -155,9 +160,13 @@ const Chatbot = () => {
         {children}
       </Box>
     ),
-    table: ({ children }: any) => <Box component="table" sx={{ borderCollapse: 'collapse', width: '100%', mb: 1, fontSize: '0.85em' }}>{children}</Box>,
-    th: ({ children }: any) => <Box component="th" sx={{ border: `1px solid ${colors.border}`, p: 0.5, textAlign: 'left' }}>{children}</Box>,
-    td: ({ children }: any) => <Box component="td" sx={{ border: `1px solid ${colors.border}`, p: 0.5 }}>{children}</Box>,
+    table: ({ children }: any) => (
+      <Box sx={{ overflowX: 'auto', mb: 1 }}>
+        <Box component="table" sx={{ borderCollapse: 'collapse', width: '100%', tableLayout: 'fixed', fontSize: '0.85em' }}>{children}</Box>
+      </Box>
+    ),
+    th: ({ children }: any) => <Box component="th" sx={{ border: `1px solid ${colors.border}`, p: 0.5, textAlign: 'left', wordBreak: 'break-word' }}>{children}</Box>,
+    td: ({ children }: any) => <Box component="td" sx={{ border: `1px solid ${colors.border}`, p: 0.5, wordBreak: 'break-word' }}>{children}</Box>,
   };
 
   const renderMessageContent = (content: string) => (
