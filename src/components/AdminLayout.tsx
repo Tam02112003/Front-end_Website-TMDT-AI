@@ -1,15 +1,29 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItemText, ListItemIcon, CircularProgress, Snackbar, Alert, ListItemButton } from '@mui/material';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, People, Article, Category, ModelTraining, Discount, Image, BrandingWatermark, DeleteSweep } from '@mui/icons-material';
+import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import AdminService from '../services/AdminService';
+import { colors } from '../theme';
 
 const drawerWidth = 240;
+
+const navItems = [
+  { to: '/admin/orders', label: 'Đơn hàng', icon: ShoppingCartOutlined },
+  { to: '/admin/users', label: 'Người dùng', icon: PeopleOutlined },
+  { to: '/admin/news', label: 'Tin tức', icon: ArticleOutlined },
+  { to: '/admin/products', label: 'Sản phẩm', icon: CategoryOutlined },
+  { to: '/admin/brands', label: 'Thương hiệu', icon: BrandingWatermarkOutlined },
+  { to: '/admin/categories', label: 'Danh mục', icon: CategoryOutlined },
+  { to: '/admin/recommendations', label: 'Gợi ý AI', icon: ModelTrainingOutlined },
+  { to: '/admin/discounts', label: 'Khuyến mãi', icon: DiscountOutlined },
+  { to: '/admin/images', label: 'Thư viện ảnh', icon: ImageOutlined },
+];
 
 const AdminLayout = () => {
   const { isLoggedIn, user, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [clearingCache, setClearingCache] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
 
@@ -22,9 +36,9 @@ const AdminLayout = () => {
     setClearingCache(true);
     try {
       await AdminService.clearRedisCache();
-      setSnackbar({ open: true, message: 'Redis cache cleared successfully!', severity: 'success' });
+      setSnackbar({ open: true, message: 'Đã xóa Redis cache!', severity: 'success' });
     } catch (error) {
-      setSnackbar({ open: true, message: 'Failed to clear Redis cache.', severity: 'error' });
+      setSnackbar({ open: true, message: 'Xóa Redis cache thất bại.', severity: 'error' });
     }
     setClearingCache(false);
   };
@@ -43,8 +57,8 @@ const AdminLayout = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: colors.bg }}>
+        <CircularProgress sx={{ color: colors.jade }} />
       </Box>
     );
   }
@@ -54,14 +68,15 @@ const AdminLayout = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: colors.bg }}>
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Admin Dashboard
+        <Toolbar sx={{ gap: 1 }}>
+          <KeyboardAltOutlined sx={{ color: colors.jade }} />
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontSize: '1rem' }}>
+            TamStore — Quản trị
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>
-            Logout
+          <Button variant="outlined" size="small" sx={{ borderColor: colors.border, color: colors.ink, '&:hover': { borderColor: colors.jade } }} onClick={handleLogout}>
+            Đăng xuất
           </Button>
         </Toolbar>
       </AppBar>
@@ -70,71 +85,39 @@ const AdminLayout = () => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', bgcolor: colors.surface, borderRight: `1px solid ${colors.border}` },
         }}
       >
         <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            <ListItemButton component={Link} to="/admin/orders">
-              <ListItemIcon>
-                <ShoppingCart />
+        <Box sx={{ overflow: 'auto', py: 1 }}>
+          <List sx={{ px: 1 }}>
+            {navItems.map(({ to, label, icon: Icon }) => {
+              const active = location.pathname === to;
+              return (
+                <ListItemButton
+                  key={to}
+                  component={Link}
+                  to={to}
+                  sx={{
+                    borderRadius: 1,
+                    mb: 0.5,
+                    color: active ? colors.jadeBright : colors.muted,
+                    bgcolor: active ? 'rgba(63,163,140,0.12)' : 'transparent',
+                    '&:hover': { bgcolor: 'rgba(63,163,140,0.08)', color: colors.ink },
+                  }}
+                >
+                  <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
+                    <Icon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary={label} primaryTypographyProps={{ fontSize: '0.9rem' }} />
+                </ListItemButton>
+              );
+            })}
+            <ListItemButton onClick={handleClearCache} disabled={clearingCache} sx={{ borderRadius: 1, mt: 1, color: colors.danger, '&:hover': { bgcolor: 'rgba(226,105,91,0.08)' } }}>
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
+                {clearingCache ? <CircularProgress size={20} sx={{ color: colors.danger }} /> : <DeleteSweepOutlined fontSize="small" />}
               </ListItemIcon>
-              <ListItemText primary="Orders" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/users">
-              <ListItemIcon>
-                <People />
-              </ListItemIcon>
-              <ListItemText primary="Users" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/news">
-              <ListItemIcon>
-                <Article />
-              </ListItemIcon>
-              <ListItemText primary="News" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/products">
-              <ListItemIcon>
-                <Category />
-              </ListItemIcon>
-              <ListItemText primary="Products" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/brands">
-              <ListItemIcon>
-                <BrandingWatermark />
-              </ListItemIcon>
-              <ListItemText primary="Brands" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/categories">
-              <ListItemIcon>
-                <Category />
-              </ListItemIcon>
-              <ListItemText primary="Categories" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/recommendations">
-              <ListItemIcon>
-                <ModelTraining />
-              </ListItemIcon>
-              <ListItemText primary="Recommendations" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/discounts">
-              <ListItemIcon>
-                <Discount />
-              </ListItemIcon>
-              <ListItemText primary="Discounts" />
-            </ListItemButton>
-            <ListItemButton component={Link} to="/admin/images">
-              <ListItemIcon>
-                <Image />
-              </ListItemIcon>
-              <ListItemText primary="Image Gallery" />
-            </ListItemButton>
-            <ListItemButton onClick={handleClearCache} disabled={clearingCache}>
-              <ListItemIcon>
-                {clearingCache ? <CircularProgress size={24} /> : <DeleteSweep />}
-              </ListItemIcon>
-              <ListItemText primary="Clear Redis Cache" />
+              <ListItemText primary="Xóa Redis cache" primaryTypographyProps={{ fontSize: '0.9rem' }} />
             </ListItemButton>
           </List>
         </Box>

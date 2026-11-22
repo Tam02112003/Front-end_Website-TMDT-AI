@@ -15,7 +15,7 @@ const AdminRecommendationPage = () => {
       const response = await RecommendationService.trainRecommendationModel();
       setTrainingStatus(response.data.message);
     } catch (err: any) {
-      setTrainingError(`Failed to trigger training: ${err.response?.data?.detail || err.message}`);
+      setTrainingError(`Kích hoạt huấn luyện thất bại: ${err.response?.data?.detail || err.message}`);
       console.error(err);
     } finally {
       setTrainingLoading(false);
@@ -25,18 +25,18 @@ const AdminRecommendationPage = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Recommendation Model Management
+        Mô hình gợi ý AI
       </Typography>
       <Typography variant="body1" paragraph>
-        Trigger the training of the personalized recommendation model. This is a background task and may take some time.
+        Kích hoạt huấn luyện lại mô hình gợi ý cá nhân hóa. Đây là tác vụ chạy nền và có thể mất một lúc.
       </Typography>
-      <Button 
-        variant="contained" 
+      <Button
+        variant="contained"
         color="primary"
-        onClick={handleTrainModel} 
+        onClick={handleTrainModel}
         disabled={trainingLoading}
       >
-        {trainingLoading ? <CircularProgress size={24} /> : 'Train Recommendation Model'}
+        {trainingLoading ? <CircularProgress size={24} sx={{ color: '#0D1210' }} /> : 'Huấn luyện mô hình'}
       </Button>
       {trainingStatus && (
         <Alert severity="success" sx={{ mt: 2 }}>

@@ -4,6 +4,7 @@ import { getNews, createNews, updateNews, deleteNews, generateAINews, getDeleted
 import ImageUploader from '../components/ImageUploader';
 import RichTextEditor from '../components/RichTextEditor';
 import { News } from '../models';
+import { colors } from '../theme';
 
 const AdminNewsPage = () => {
   const [news, setNews] = useState<News[]>([]);
@@ -27,7 +28,7 @@ const AdminNewsPage = () => {
       const response = showDeleted ? await getDeletedNews() : await getNews();
       setNews(response.data);
     } catch (err) {
-      setError('Failed to fetch news.');
+      setError('Không tải được danh sách tin tức.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -51,24 +52,24 @@ const AdminNewsPage = () => {
   };
 
   const handleDeleteClick = async (newsId: number) => {
-    if (window.confirm('Are you sure you want to delete this news item?')) {
+    if (window.confirm('Xóa tin này?')) {
       try {
         await deleteNews(newsId);
         fetchNews();
       } catch (err) {
-        setError('Failed to delete news item.');
+        setError('Xóa tin thất bại.');
         console.error(err);
       }
     }
   };
 
   const handleRestoreClick = async (newsId: number) => {
-    if (window.confirm('Are you sure you want to restore this news item?')) {
+    if (window.confirm('Khôi phục tin này?')) {
       try {
         await restoreNews(newsId);
         fetchNews();
       } catch (err) {
-        setError('Failed to restore news item.');
+        setError('Khôi phục tin thất bại.');
         console.error(err);
       }
     }
@@ -85,7 +86,7 @@ const AdminNewsPage = () => {
         setOpenDialog(false);
         fetchNews();
       } catch (err) {
-        setError('Failed to save news item.');
+        setError('Lưu tin thất bại.');
         console.error(err);
       }
     }
@@ -136,7 +137,7 @@ const AdminNewsPage = () => {
       });
       setAiGeneratedContent(response.data);
     } catch (err) {
-      setError('Failed to generate AI news.');
+      setError('Tạo tin bằng AI thất bại.');
       console.error(err);
     } finally {
       setAiGenerating(false);
@@ -175,14 +176,14 @@ const AdminNewsPage = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Manage News
+        Quản lý tin tức
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-        <Button variant="contained" onClick={handleCreateClick} disabled={showDeleted}>
-          Create New News
+        <Button variant="contained" color="primary" onClick={handleCreateClick} disabled={showDeleted}>
+          Thêm tin tức
         </Button>
-        <Button variant="outlined" onClick={() => setOpenAIDialog(true)} disabled={showDeleted}>
-          Generate News with AI
+        <Button variant="outlined" onClick={() => setOpenAIDialog(true)} disabled={showDeleted} sx={{ borderColor: colors.border, color: colors.ink }}>
+          Tạo tin bằng AI
         </Button>
         <FormControlLabel
           control={
@@ -193,19 +194,19 @@ const AdminNewsPage = () => {
               color="primary"
             />
           }
-          label="Show Deleted"
+          label="Hiện đã xóa"
         />
       </Box>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Title</TableCell>
+              <TableCell>Tiêu đề</TableCell>
               <TableCell>Active</TableCell>
-              <TableCell>Created At</TableCell>
-              <TableCell>Updated At</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Ngày tạo</TableCell>
+              <TableCell>Cập nhật</TableCell>
+              <TableCell>Thao tác</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -213,20 +214,20 @@ const AdminNewsPage = () => {
               <TableRow key={newsItem.id}>
                 <TableCell>{newsItem.id}</TableCell>
                 <TableCell>{newsItem.title}</TableCell>
-                <TableCell>{newsItem.is_active ? 'Yes' : 'No'}</TableCell>
-                <TableCell>{new Date(newsItem.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>{new Date(newsItem.updated_at).toLocaleDateString()}</TableCell>
+                <TableCell>{newsItem.is_active ? 'Có' : 'Không'}</TableCell>
+                <TableCell>{new Date(newsItem.created_at).toLocaleDateString('vi-VN')}</TableCell>
+                <TableCell>{new Date(newsItem.updated_at).toLocaleDateString('vi-VN')}</TableCell>
                 <TableCell>
-                  {<Button variant="contained" size="small" onClick={() => handleEditClick(newsItem)} sx={{ mr: 1 }}>
-                      Edit
+                  {<Button variant="contained" color="primary" size="small" onClick={() => handleEditClick(newsItem)} sx={{ mr: 1 }}>
+                      Sửa
                     </Button>}
                   {showDeleted ? (
                     <Button variant="contained" color="success" size="small" onClick={() => handleRestoreClick(newsItem.id)}>
-                      Restore
+                      Khôi phục
                     </Button>
                   ) : (
-                    <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(newsItem.id)}>
-                      Delete
+                    <Button variant="outlined" size="small" onClick={() => handleDeleteClick(newsItem.id)} sx={{ borderColor: 'error.main', color: 'error.main' }}>
+                      Xóa
                     </Button>
                   )}
                 </TableCell>
@@ -237,14 +238,14 @@ const AdminNewsPage = () => {
       </TableContainer>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
-        <DialogTitle>{isEditing ? 'Edit News' : 'Create News'}</DialogTitle>
+        <DialogTitle>{isEditing ? 'Sửa tin tức' : 'Thêm tin tức'}</DialogTitle>
         <DialogContent>
           {currentNews && (
             <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }}>
               <TextField
                 margin="dense"
                 name="title"
-                label="Title"
+                label="Tiêu đề"
                 type="text"
                 fullWidth
                 variant="standard"
@@ -261,7 +262,7 @@ const AdminNewsPage = () => {
                     return null;
                   });
                 }}
-                placeholder="News Content"
+                placeholder="Nội dung tin tức"
               />
               <ImageUploader onImageUpload={handleImageUpload} initialImageUrls={currentNews.image_url ? [currentNews.image_url] : []} />
               <FormControlLabel
@@ -273,23 +274,23 @@ const AdminNewsPage = () => {
                     color="primary"
                   />
                 }
-                label="Is Active"
+                label="Đang kích hoạt"
               />
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSaveNews}>Save</Button>
+          <Button onClick={handleCloseDialog}>Hủy</Button>
+          <Button onClick={handleSaveNews} color="primary">Lưu</Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openAIDialog} onClose={() => setOpenAIDialog(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Generate News with AI</DialogTitle>
+        <DialogTitle>Tạo tin bằng AI</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
-            label="Topic"
+            label="Chủ đề"
             type="text"
             fullWidth
             value={aiTopic}
@@ -298,7 +299,7 @@ const AdminNewsPage = () => {
           />
           <TextField
             margin="dense"
-            label="Keywords (optional)"
+            label="Từ khóa (tùy chọn)"
             type="text"
             fullWidth
             value={aiKeywords}
@@ -315,23 +316,23 @@ const AdminNewsPage = () => {
             <MenuItem value="vừa phải">Vừa phải</MenuItem>
             <MenuItem value="dài">Dài</MenuItem>
           </Select>
-          <Button variant="contained" onClick={handleGenerateAINews} disabled={aiGenerating}>
-            {aiGenerating ? <CircularProgress size={24} /> : 'Generate'}
+          <Button variant="contained" color="primary" onClick={handleGenerateAINews} disabled={aiGenerating}>
+            {aiGenerating ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Tạo nội dung'}
           </Button>
           {aiGeneratedContent && (
-            <Box sx={{ mt: 3, p: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
-              <Typography variant="h6">Generated Title:</Typography>
+            <Box sx={{ mt: 3, p: 2, border: `1px solid ${colors.border}`, borderRadius: 1 }}>
+              <Typography variant="h6">Tiêu đề tạo ra:</Typography>
               <Typography>{aiGeneratedContent.title}</Typography>
-              <Typography variant="h6" sx={{ mt: 2 }}>Generated Content:</Typography>
+              <Typography variant="h6" sx={{ mt: 2 }}>Nội dung tạo ra:</Typography>
               <Typography sx={{ whiteSpace: 'pre-wrap' }}>{aiGeneratedContent.content}</Typography>
-              <Button variant="contained" sx={{ mt: 2 }} onClick={handleUseGeneratedContent}>
-                Use This Content
+              <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleUseGeneratedContent}>
+                Dùng nội dung này
               </Button>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAIDialog(false)}>Close</Button>
+          <Button onClick={() => setOpenAIDialog(false)}>Đóng</Button>
         </DialogActions>
       </Dialog>
     </Box>

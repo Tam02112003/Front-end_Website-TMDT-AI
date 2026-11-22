@@ -37,7 +37,7 @@ const AdminDiscountPage = () => {
       setDiscounts(discountResponse.data);
       setProducts(productResponse.data);
     } catch (err) {
-      setError('Failed to fetch data.');
+      setError('Không tải được dữ liệu.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -61,24 +61,24 @@ const AdminDiscountPage = () => {
   };
 
   const handleDeleteClick = async (discountId: number) => {
-    if (window.confirm('Are you sure you want to delete this discount?')) {
+    if (window.confirm('Xóa khuyến mãi này?')) {
       try {
         await DiscountService.deleteDiscount(discountId);
         fetchDiscountsAndProducts();
       } catch (err) {
-        setError('Failed to delete discount.');
+        setError('Xóa khuyến mãi thất bại.');
         console.error(err);
       }
     }
   };
 
   const handleRestoreClick = async (discountId: number) => {
-    if (window.confirm('Are you sure you want to restore this discount?')) {
+    if (window.confirm('Khôi phục khuyến mãi này?')) {
       try {
         await DiscountService.restoreDiscount(discountId);
         fetchDiscountsAndProducts();
       } catch (err) {
-        setError('Failed to restore discount.');
+        setError('Khôi phục khuyến mãi thất bại.');
         console.error(err);
       }
     }
@@ -95,7 +95,7 @@ const AdminDiscountPage = () => {
         setOpenDialog(false);
         fetchDiscountsAndProducts();
       } catch (err) {
-        setError('Failed to save discount.');
+        setError('Lưu khuyến mãi thất bại.');
         console.error(err);
       }
     }
@@ -137,9 +137,9 @@ const AdminDiscountPage = () => {
   };
 
   const getProductName = (productId?: number) => {
-    if (!productId) return 'N/A';
+    if (!productId) return 'Không có';
     const product = products.find(p => p.id === productId);
-    return product ? product.name : 'Unknown Product';
+    return product ? product.name : 'Sản phẩm không rõ';
   };
 
   if (loading) {
@@ -158,11 +158,11 @@ const AdminDiscountPage = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
         <Typography variant="h4" gutterBottom>
-          Manage Discounts
+          Quản lý khuyến mãi
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-          <Button variant="contained" onClick={handleCreateClick} disabled={showDeleted}>
-            Create New Discount
+          <Button variant="contained" color="primary" onClick={handleCreateClick} disabled={showDeleted}>
+            Thêm khuyến mãi
           </Button>
           <FormControlLabel
             control={
@@ -173,21 +173,21 @@ const AdminDiscountPage = () => {
                 color="primary"
               />
             }
-            label="Show Deleted"
+            label="Hiện đã xóa"
           />
         </Box>
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Percent</TableCell>
-                <TableCell>Start Date</TableCell>
-                <TableCell>End Date</TableCell>
-                <TableCell>Product</TableCell>
+                <TableCell>Tên</TableCell>
+                <TableCell>%</TableCell>
+                <TableCell>Bắt đầu</TableCell>
+                <TableCell>Kết thúc</TableCell>
+                <TableCell>Sản phẩm</TableCell>
                 <TableCell>Active</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -196,21 +196,21 @@ const AdminDiscountPage = () => {
                   <TableCell>{discountItem.id}</TableCell>
                   <TableCell>{discountItem.name}</TableCell>
                   <TableCell>{discountItem.percent}%</TableCell>
-                  <TableCell>{discountItem.start_date ? new Date(discountItem.start_date).toLocaleDateString() : 'N/A'}</TableCell>
-                  <TableCell>{discountItem.end_date ? new Date(discountItem.end_date).toLocaleDateString() : 'N/A'}</TableCell>
+                  <TableCell>{discountItem.start_date ? new Date(discountItem.start_date).toLocaleDateString('vi-VN') : 'Không có'}</TableCell>
+                  <TableCell>{discountItem.end_date ? new Date(discountItem.end_date).toLocaleDateString('vi-VN') : 'Không có'}</TableCell>
                   <TableCell>{getProductName(discountItem.product_id)}</TableCell>
-                  <TableCell>{discountItem.is_active ? 'Yes' : 'No'}</TableCell>
+                  <TableCell>{discountItem.is_active ? 'Có' : 'Không'}</TableCell>
                   <TableCell>
-                    {<Button variant="contained" size="small" onClick={() => handleEditClick(discountItem)} sx={{ mr: 1 }}>
-                        Edit
+                    {<Button variant="contained" color="primary" size="small" onClick={() => handleEditClick(discountItem)} sx={{ mr: 1 }}>
+                        Sửa
                       </Button>}
                     {showDeleted ? (
                       <Button variant="contained" color="success" size="small" onClick={() => handleRestoreClick(discountItem.id)}>
-                        Restore
+                        Khôi phục
                       </Button>
                     ) : (
-                      <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(discountItem.id)}>
-                        Delete
+                      <Button variant="outlined" size="small" onClick={() => handleDeleteClick(discountItem.id)} sx={{ borderColor: 'error.main', color: 'error.main' }}>
+                        Xóa
                       </Button>
                     )}
                   </TableCell>
@@ -221,14 +221,14 @@ const AdminDiscountPage = () => {
         </TableContainer>
 
         <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
-          <DialogTitle>{isEditing ? 'Edit Discount' : 'Create Discount'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Sửa khuyến mãi' : 'Thêm khuyến mãi'}</DialogTitle>
           <DialogContent>
             {currentDiscount && (
               <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }}>
                 <TextField
                   margin="dense"
                   name="name"
-                  label="Name"
+                  label="Tên"
                   type="text"
                   fullWidth
                   variant="standard"
@@ -238,7 +238,7 @@ const AdminDiscountPage = () => {
                 <TextField
                   margin="dense"
                   name="percent"
-                  label="Percent"
+                  label="Phần trăm giảm"
                   type="number"
                   fullWidth
                   variant="standard"
@@ -246,7 +246,7 @@ const AdminDiscountPage = () => {
                   onChange={handleInputChange}
                 />
                 <DatePicker
-                  label="Start Date"
+                  label="Ngày bắt đầu"
                   value={currentDiscount.start_date ? dayjs(currentDiscount.start_date) : null}
                   onChange={(newValue) => {
                     setCurrentDiscount((prevDiscount) => {
@@ -259,7 +259,7 @@ const AdminDiscountPage = () => {
                   slotProps={{ textField: { fullWidth: true, margin: "dense", variant: "standard" } }}
                 />
                 <DatePicker
-                  label="End Date"
+                  label="Ngày kết thúc"
                   value={currentDiscount.end_date ? dayjs(currentDiscount.end_date) : null}
                   onChange={(newValue) => {
                     setCurrentDiscount((prevDiscount) => {
@@ -272,16 +272,16 @@ const AdminDiscountPage = () => {
                   slotProps={{ textField: { fullWidth: true, margin: "dense", variant: "standard" } }}
                 />
                 <FormControl fullWidth margin="dense">
-                  <InputLabel id="product-select-label">Product (optional)</InputLabel>
+                  <InputLabel id="product-select-label">Sản phẩm (tùy chọn)</InputLabel>
                   <Select
                     labelId="product-select-label"
                     id="product-select"
                     name="product_id"
                     value={currentDiscount.product_id || ''}
-                    label="Product (optional)"
+                    label="Sản phẩm (tùy chọn)"
                     onChange={handleSelectChange}
                   >
-                    <MenuItem value=""><em>None</em></MenuItem>
+                    <MenuItem value=""><em>Không chọn</em></MenuItem>
                     {products.map((product) => (
                       <MenuItem key={product.id} value={product.id}>
                         {product.name}
@@ -298,14 +298,14 @@ const AdminDiscountPage = () => {
                       color="primary"
                     />
                   }
-                  label="Is Active"
+                  label="Đang kích hoạt"
                 />
               </Box>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button onClick={handleSaveDiscount}>Save</Button>
+            <Button onClick={handleCloseDialog}>Hủy</Button>
+            <Button onClick={handleSaveDiscount} color="primary">Lưu</Button>
           </DialogActions>
         </Dialog>
       </Box>

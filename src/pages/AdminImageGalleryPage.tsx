@@ -21,7 +21,7 @@ const AdminImageGalleryPage = () => {
       setImages(response.data);
       setSelectedImages([]); // Clear selection on refresh
     } catch (err) {
-      setError('Failed to fetch images.');
+      setError('Không tải được danh sách ảnh.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -41,13 +41,13 @@ const AdminImageGalleryPage = () => {
   };
 
   const handleDeleteSingleImage = async (publicId: string) => {
-    if (window.confirm('Are you sure you want to delete this image?')) {
+    if (window.confirm('Xóa ảnh này?')) {
       try {
         setLoading(true);
         await UploadService.deleteImage(publicId);
         fetchImages(); // Refresh the list
       } catch (err) {
-        setError('Failed to delete image.');
+        setError('Xóa ảnh thất bại.');
         console.error(err);
       } finally {
         setLoading(false);
@@ -58,13 +58,13 @@ const AdminImageGalleryPage = () => {
   const handleDeleteSelectedImages = async () => {
     if (selectedImages.length === 0) return;
 
-    if (window.confirm(`Are you sure you want to delete ${selectedImages.length} selected images?`)) {
+    if (window.confirm(`Xóa ${selectedImages.length} ảnh đã chọn?`)) {
       try {
         setLoading(true);
         await UploadService.deleteMultipleImages(selectedImages);
         fetchImages(); // Refresh the list
       } catch (err) {
-        setError('Failed to delete selected images.');
+        setError('Xóa ảnh đã chọn thất bại.');
         console.error(err);
       } finally {
         setLoading(false);
@@ -75,7 +75,7 @@ const AdminImageGalleryPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: 'primary.main' }} />
       </Box>
     );
   }
@@ -87,7 +87,7 @@ const AdminImageGalleryPage = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Image Gallery
+        Thư viện ảnh
       </Typography>
       <Button
         variant="contained"
@@ -96,10 +96,10 @@ const AdminImageGalleryPage = () => {
         onClick={handleDeleteSelectedImages}
         disabled={selectedImages.length === 0 || loading}
       >
-        Delete Selected ({selectedImages.length})
+        Xóa đã chọn ({selectedImages.length})
       </Button>
       {images.length === 0 ? (
-        <Typography>No images found.</Typography>
+        <Typography>Chưa có ảnh nào.</Typography>
       ) : (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           {images.map((image) => (
@@ -137,7 +137,7 @@ const AdminImageGalleryPage = () => {
                     size="small" 
                     onClick={() => handleDeleteSingleImage(image.public_id)}
                   >
-                    Delete
+                    Xóa
                   </Button>
                 </CardActions>
               </Card>

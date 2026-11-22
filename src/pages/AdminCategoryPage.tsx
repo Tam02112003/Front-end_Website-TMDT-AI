@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import CategoryService from '../services/CategoryService';
 import { Category } from '../models';
+import { colors } from '../theme';
 
 const AdminCategoryPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -17,7 +18,7 @@ const AdminCategoryPage = () => {
       const response = await CategoryService.getCategories();
       setCategories(response.data);
     } catch (err) {
-      setError('Failed to fetch categories.');
+      setError('Không tải được danh sách danh mục.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -41,12 +42,12 @@ const AdminCategoryPage = () => {
   };
 
   const handleDeleteClick = async (categoryId: number) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
+    if (window.confirm('Xóa danh mục này?')) {
       try {
         await CategoryService.deleteCategory(categoryId);
         fetchCategories();
       } catch (err) {
-        setError('Failed to delete category.');
+        setError('Xóa danh mục thất bại.');
         console.error(err);
       }
     }
@@ -63,7 +64,7 @@ const AdminCategoryPage = () => {
         setOpenDialog(false);
         fetchCategories();
       } catch (err) {
-        setError('Failed to save category.');
+        setError('Lưu danh mục thất bại.');
         console.error(err);
       }
     }
@@ -87,7 +88,7 @@ const AdminCategoryPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: colors.jade }} />
       </Box>
     );
   }
@@ -99,20 +100,20 @@ const AdminCategoryPage = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Manage Categories
+        Quản lý danh mục
       </Typography>
       <Box sx={{ mb: 2 }}>
-        <Button variant="contained" onClick={handleCreateClick}>
-          Create New Category
+        <Button variant="contained" color="primary" onClick={handleCreateClick}>
+          Thêm danh mục
         </Button>
       </Box>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Tên</TableCell>
+              <TableCell>Thao tác</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -121,11 +122,11 @@ const AdminCategoryPage = () => {
                 <TableCell>{category.id}</TableCell>
                 <TableCell>{category.name}</TableCell>
                 <TableCell>
-                  <Button variant="contained" size="small" onClick={() => handleEditClick(category)} sx={{ mr: 1 }}>
-                    Edit
+                  <Button variant="contained" color="primary" size="small" onClick={() => handleEditClick(category)} sx={{ mr: 1 }}>
+                    Sửa
                   </Button>
-                  <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(category.id)}>
-                    Delete
+                  <Button variant="outlined" size="small" onClick={() => handleDeleteClick(category.id)} sx={{ borderColor: colors.danger, color: colors.danger }}>
+                    Xóa
                   </Button>
                 </TableCell>
               </TableRow>
@@ -135,14 +136,14 @@ const AdminCategoryPage = () => {
       </TableContainer>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{isEditing ? 'Edit Category' : 'Create Category'}</DialogTitle>
+        <DialogTitle>{isEditing ? 'Sửa danh mục' : 'Thêm danh mục'}</DialogTitle>
         <DialogContent>
           {currentCategory && (
             <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }}>
               <TextField
                 margin="dense"
                 name="name"
-                label="Name"
+                label="Tên"
                 type="text"
                 fullWidth
                 variant="standard"
@@ -153,8 +154,8 @@ const AdminCategoryPage = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSaveCategory}>Save</Button>
+          <Button onClick={handleCloseDialog}>Hủy</Button>
+          <Button onClick={handleSaveCategory} color="primary">Lưu</Button>
         </DialogActions>
       </Dialog>
     </Box>

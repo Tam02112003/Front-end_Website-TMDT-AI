@@ -22,7 +22,7 @@ const AdminUserPage = () => {
       const response = await UserService.getAllUsers();
       setUsers(response.data);
     } catch (err) {
-      setError('Failed to fetch users.');
+      setError('Không tải được danh sách người dùng.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -39,12 +39,12 @@ const AdminUserPage = () => {
   };
 
   const handleDeleteClick = async (userId: number) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm('Xóa người dùng này?')) {
       try {
         await UserService.deleteUser(userId);
         fetchUsers();
       } catch (err) {
-        setError('Failed to delete user.');
+        setError('Xóa người dùng thất bại.');
         console.error(err);
       }
     }
@@ -61,7 +61,7 @@ const AdminUserPage = () => {
         setOpenEditDialog(false);
         fetchUsers();
       } catch (err) {
-        setError('Failed to update user.');
+        setError('Cập nhật người dùng thất bại.');
         console.error(err);
       }
     }
@@ -107,17 +107,17 @@ const AdminUserPage = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Manage Users
+        Quản lý người dùng
       </Typography>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
+              <TableCell>Tên đăng nhập</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Admin</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Thao tác</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -126,13 +126,13 @@ const AdminUserPage = () => {
                 <TableCell>{user.id}</TableCell>
                 <TableCell>{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.is_admin ? 'Yes' : 'No'}</TableCell>
+                <TableCell>{user.is_admin ? 'Có' : 'Không'}</TableCell>
                 <TableCell>
-                  <Button variant="contained" size="small" onClick={() => handleEditClick(user)} sx={{ mr: 1 }}>
-                    Edit
+                  <Button variant="contained" color="primary" size="small" onClick={() => handleEditClick(user)} sx={{ mr: 1 }}>
+                    Sửa
                   </Button>
-                  <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(user.id)}>
-                    Delete
+                  <Button variant="outlined" size="small" onClick={() => handleDeleteClick(user.id)} sx={{ borderColor: 'error.main', color: 'error.main' }}>
+                    Xóa
                   </Button>
                 </TableCell>
               </TableRow>
@@ -142,14 +142,14 @@ const AdminUserPage = () => {
       </TableContainer>
 
       <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
-        <DialogTitle>Edit User</DialogTitle>
+        <DialogTitle>Sửa người dùng</DialogTitle>
         <DialogContent>
           {currentUser && (
             <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }}>
               <TextField
                 margin="dense"
                 name="username"
-                label="Username"
+                label="Tên đăng nhập"
                 type="text"
                 fullWidth
                 variant="standard"
@@ -167,25 +167,25 @@ const AdminUserPage = () => {
                 onChange={handleInputChange}
               />
               <FormControl fullWidth variant="standard" sx={{ m: 1 }}>
-                <InputLabel id="is_admin-label">Admin Role</InputLabel>
+                <InputLabel id="is_admin-label">Quyền Admin</InputLabel>
                 <Select
                   labelId="is_admin-label"
                   id="is_admin"
                   name="is_admin"
                   value={currentUser.is_admin ? 'true' : 'false'}
                   onChange={handleRoleChange}
-                  label="Admin Role"
+                  label="Quyền Admin"
                 >
-                  <MenuItem value="true">Yes</MenuItem>
-                  <MenuItem value="false">No</MenuItem>
+                  <MenuItem value="true">Có</MenuItem>
+                  <MenuItem value="false">Không</MenuItem>
                 </Select>
               </FormControl>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditDialog}>Cancel</Button>
-          <Button onClick={handleSaveUser}>Save</Button>
+          <Button onClick={handleCloseEditDialog}>Hủy</Button>
+          <Button onClick={handleSaveUser} color="primary">Lưu</Button>
         </DialogActions>
       </Dialog>
     </Box>

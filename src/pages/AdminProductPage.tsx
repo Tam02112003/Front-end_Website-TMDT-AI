@@ -36,7 +36,7 @@ const AdminProductPage = () => {
         : await ProductService.getAllProducts(query);
       setProducts(response.data);
     } catch (err) {
-      setError('Failed to fetch products.');
+      setError('Không tải được danh sách sản phẩm.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -52,7 +52,7 @@ const AdminProductPage = () => {
       setBrands(brandsResponse.data);
       setCategories(categoriesResponse.data);
     } catch (err) {
-      setError('Failed to fetch brands and categories.');
+      setError('Không tải được thương hiệu/danh mục.');
       console.error(err);
     }
   };
@@ -97,24 +97,24 @@ const AdminProductPage = () => {
     };
   
     const handleDeleteClick = async (productId: number) => {
-      if (window.confirm('Are you sure you want to delete this product?')) {
+      if (window.confirm('Xóa sản phẩm này?')) {
         try {
           await ProductService.deleteProduct(productId);
           fetchProducts();
         } catch (err) {
-          setError('Failed to delete product.');
+          setError('Xóa sản phẩm thất bại.');
           console.error(err);
         }
       }
     };
   
     const handleRestoreClick = async (productId: number) => {
-      if (window.confirm('Are you sure you want to restore this product?')) {
+      if (window.confirm('Khôi phục sản phẩm này?')) {
         try {
           await ProductService.restoreProduct(productId);
           fetchProducts();
         } catch (err) {
-          setError('Failed to restore product.');
+          setError('Khôi phục sản phẩm thất bại.');
           console.error(err);
         }
       }
@@ -131,7 +131,7 @@ const AdminProductPage = () => {
           setOpenDialog(false);
           fetchProducts();
         } catch (err) {
-          setError('Failed to save product.');
+          setError('Lưu sản phẩm thất bại.');
           console.error(err);
         }
       }
@@ -182,20 +182,20 @@ const AdminProductPage = () => {
   
     const handleUploadCsv = async () => {
       if (!selectedFile) {
-        setUploadMessage('Please select a CSV file to upload.');
+        setUploadMessage('Vui lòng chọn file CSV để tải lên.');
         return;
       }
-  
+
       setUploading(true);
       setUploadMessage(null);
       try {
         const response = await ProductService.uploadProductsCsv(selectedFile);
-        setUploadMessage(`Upload successful: ${response.data.message || 'Products imported successfully.'}`);
+        setUploadMessage(`Tải lên thành công: ${response.data.message || 'Đã nhập sản phẩm thành công.'}`);
         setOpenCsvDialog(false);
         setSelectedFile(null);
         fetchProducts(); // Refresh product list
       } catch (err: any) {
-        setUploadMessage(`Upload failed: ${err.response?.data?.detail || err.message}`);
+        setUploadMessage(`Tải lên thất bại: ${err.response?.data?.detail || err.message}`);
         console.error(err);
       } finally {
         setUploading(false);
@@ -211,11 +211,11 @@ const AdminProductPage = () => {
     return (
       <Box>
         <Typography variant="h4" gutterBottom>
-          Manage Products
+          Quản lý sản phẩm
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center', flexWrap: 'wrap' }}>
           <TextField
-            label="Search Products"
+            label="Tìm sản phẩm"
             variant="outlined"
             value={searchQuery}
             onChange={handleSearchChange}
@@ -224,7 +224,7 @@ const AdminProductPage = () => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  {loading && <CircularProgress size={20} />}
+                  {loading && <CircularProgress size={20} sx={{ color: 'primary.main' }} />}
                 </InputAdornment>
               ),
             }}
@@ -238,26 +238,26 @@ const AdminProductPage = () => {
                 color="primary"
               />
             }
-            label="Show Deleted"
+            label="Hiện đã xóa"
           />
-          <Button variant="contained" onClick={handleCreateClick} disabled={showDeleted}>
-            Create New Product
+          <Button variant="contained" color="primary" onClick={handleCreateClick} disabled={showDeleted}>
+            Thêm sản phẩm
           </Button>
-          <Button variant="outlined" onClick={() => setOpenCsvDialog(true)} disabled={showDeleted}>
-            Import Products (CSV)
+          <Button variant="outlined" onClick={() => setOpenCsvDialog(true)} disabled={showDeleted} sx={{ borderColor: 'divider' }}>
+            Nhập CSV
           </Button>
         </Box>
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Quantity</TableCell>
+                <TableCell>Ảnh</TableCell>
+                <TableCell>Tên</TableCell>
+                <TableCell>Giá</TableCell>
+                <TableCell>SL</TableCell>
                 <TableCell>Active</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -265,27 +265,27 @@ const AdminProductPage = () => {
                 <TableRow key={productItem.id}>
                   <TableCell>{productItem.id}</TableCell>
                   <TableCell>
-                    <img 
-                      src={productItem.image_urls?.[0] || 'https://via.placeholder.com/50'}
+                    <img
+                      src={productItem.image_urls?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/d/df/Mechanical_keyboard_example.jpg'}
                       alt={productItem.name}
                       style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
                     />
                   </TableCell>
                   <TableCell>{productItem.name}</TableCell>
-                  <TableCell>{productItem.price}</TableCell>
+                  <TableCell>{productItem.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</TableCell>
                   <TableCell>{productItem.quantity}</TableCell>
-                  <TableCell>{productItem.is_active ? 'Yes' : 'No'}</TableCell>
+                  <TableCell>{productItem.is_active ? 'Có' : 'Không'}</TableCell>
                   <TableCell>
-                    {<Button variant="contained" size="small" onClick={() => handleEditClick(productItem)} sx={{ mr: 1 }}>
-                        Edit
+                    {<Button variant="contained" color="primary" size="small" onClick={() => handleEditClick(productItem)} sx={{ mr: 1 }}>
+                        Sửa
                       </Button>}
                     {showDeleted ? (
                       <Button variant="contained" color="success" size="small" onClick={() => handleRestoreClick(productItem.id)}>
-                        Restore
+                        Khôi phục
                       </Button>
                     ) : (
-                      <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(productItem.id)}>
-                        Delete
+                      <Button variant="outlined" size="small" onClick={() => handleDeleteClick(productItem.id)} sx={{ borderColor: 'error.main', color: 'error.main' }}>
+                        Xóa
                       </Button>
                     )}
                   </TableCell>
@@ -296,14 +296,14 @@ const AdminProductPage = () => {
         </TableContainer>
   
         <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
-          <DialogTitle>{isEditing ? 'Edit Product' : 'Create Product'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}</DialogTitle>
           <DialogContent>
             {currentProduct && (
               <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }}>
                 <TextField
                   margin="dense"
                   name="name"
-                  label="Name"
+                  label="Tên"
                   type="text"
                   fullWidth
                   variant="standard"
@@ -320,12 +320,12 @@ const AdminProductPage = () => {
                       return null;
                     });
                   }}
-                  placeholder="Product Description"
+                  placeholder="Mô tả sản phẩm"
                 />
                 <TextField
                   margin="dense"
                   name="price"
-                  label="Price"
+                  label="Giá (VNĐ)"
                   type="number"
                   fullWidth
                   variant="standard"
@@ -335,7 +335,7 @@ const AdminProductPage = () => {
                 <TextField
                   margin="dense"
                   name="quantity"
-                  label="Quantity"
+                  label="Số lượng"
                   type="number"
                   fullWidth
                   variant="standard"
@@ -343,7 +343,7 @@ const AdminProductPage = () => {
                   onChange={handleInputChange}
                 />
                 <FormControl fullWidth margin="dense">
-                  <InputLabel>Brand</InputLabel>
+                  <InputLabel>Thương hiệu</InputLabel>
                   <Select
                     name="brand_id"
                     value={currentProduct.brand_id || ''}
@@ -357,7 +357,7 @@ const AdminProductPage = () => {
                   </Select>
                 </FormControl>
                 <FormControl fullWidth margin="dense">
-                  <InputLabel>Category</InputLabel>
+                  <InputLabel>Danh mục</InputLabel>
                   <Select
                     name="category_id"
                     value={currentProduct.category_id || ''}
@@ -372,7 +372,7 @@ const AdminProductPage = () => {
                 </FormControl>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DateTimePicker
-                    label="Release Date"
+                    label="Ngày ra mắt"
                     value={currentProduct.release_date ? dayjs(currentProduct.release_date) : null}
                     onChange={(newValue) => {
                       setCurrentProduct((prevProduct) => {
@@ -395,19 +395,19 @@ const AdminProductPage = () => {
                       color="primary"
                     />
                   }
-                  label="Is Active"
+                  label="Đang kích hoạt"
                 />
               </Box>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button onClick={handleSaveProduct}>Save</Button>
+            <Button onClick={handleCloseDialog}>Hủy</Button>
+            <Button onClick={handleSaveProduct} color="primary">Lưu</Button>
           </DialogActions>
         </Dialog>
-  
+
         <Dialog open={openCsvDialog} onClose={() => setOpenCsvDialog(false)}>
-          <DialogTitle>Import Products from CSV</DialogTitle>
+          <DialogTitle>Nhập sản phẩm từ CSV</DialogTitle>
           <DialogContent>
             <input
               type="file"
@@ -415,12 +415,12 @@ const AdminProductPage = () => {
               onChange={handleFileChange}
               style={{ display: 'block', marginBottom: '16px' }}
             />
-            {uploadMessage && <Alert severity={uploadMessage.startsWith('Upload successful') ? 'success' : 'error'}>{uploadMessage}</Alert>}
+            {uploadMessage && <Alert severity={uploadMessage.startsWith('Tải lên thành công') ? 'success' : 'error'}>{uploadMessage}</Alert>}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenCsvDialog(false)}>Cancel</Button>
-            <Button onClick={handleUploadCsv} disabled={uploading || !selectedFile}>
-              {uploading ? <CircularProgress size={24} /> : 'Upload'}
+            <Button onClick={() => setOpenCsvDialog(false)}>Hủy</Button>
+            <Button onClick={handleUploadCsv} disabled={uploading || !selectedFile} color="primary">
+              {uploading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Tải lên'}
             </Button>
           </DialogActions>
         </Dialog>
