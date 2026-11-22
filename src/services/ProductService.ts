@@ -107,6 +107,10 @@ const getDeletedProducts = () => {
   return api.get<Product[]>('/admin/products/deleted');
 };
 
+const getPendingAiProducts = () => {
+  return api.get<Product[]>('/admin/products/pending-ai');
+};
+
 const restoreProduct = (productId: number) => {
   return api.put<Product>(`/admin/products/${productId}/restore`);
 };
@@ -131,6 +135,7 @@ const ProductService = {
   updateProductReview,
   deleteProductReview,
   getDeletedProducts,
+  getPendingAiProducts,
   restoreProduct,
   researchProducts,
 };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, InputAdornment, Select, MenuItem, InputLabel, FormControl, SelectChangeEvent } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, InputAdornment, Select, MenuItem, InputLabel, FormControl, SelectChangeEvent, ToggleButton, ToggleButtonGroup, Chip } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -27,7 +27,7 @@ const AdminProductPage = () => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
-  const [showDeleted, setShowDeleted] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'active' | 'pending_ai' | 'deleted'>('active');
 
   const [openResearchDialog, setOpenResearchDialog] = useState<boolean>(false);
   const [researchTopic, setResearchTopic] = useState<string>('');
@@ -39,9 +39,11 @@ const AdminProductPage = () => {
   const fetchProducts = async (query: string = '') => {
     try {
       setLoading(true);
-      const response = showDeleted 
+      const response = viewMode === 'deleted'
         ? await ProductService.getDeletedProducts()
-        : await ProductService.getAllProducts(query);
+        : viewMode === 'pending_ai'
+          ? await ProductService.getPendingAiProducts()
+          : await ProductService.getAllProducts(query);
       setProducts(response.data);
     } catch (err) {
       setError('Không tải được danh sách sản phẩm.');
@@ -73,7 +75,7 @@ const AdminProductPage = () => {
     return () => {
       clearTimeout(handler);
     };
-  }, [searchQuery, showDeleted]); // Re-run effect when searchQuery or showDeleted changes
+  }, [searchQuery, viewMode]); // Re-run effect when searchQuery or viewMode changes
 
   useEffect(() => {
     fetchBrandsAndCategories();
@@ -298,7 +300,7 @@ const AdminProductPage = () => {
             value={searchQuery}
             onChange={handleSearchChange}
             sx={{ flexGrow: 1 }}
-            disabled={showDeleted}
+            disabled={viewMode !== 'active'}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -307,24 +309,23 @@ const AdminProductPage = () => {
               ),
             }}
           />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showDeleted}
-                onChange={(e) => setShowDeleted(e.target.checked)}
-                name="showDeleted"
-                color="primary"
-              />
-            }
-            label="Hiện đã xóa"
-          />
-          <Button variant="contained" color="primary" onClick={handleCreateClick} disabled={showDeleted}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_e, value) => value && setViewMode(value)}
+            size="small"
+          >
+            <ToggleButton value="active">Đang bán</ToggleButton>
+            <ToggleButton value="pending_ai">Chờ duyệt AI</ToggleButton>
+            <ToggleButton value="deleted">Đã xóa</ToggleButton>
+          </ToggleButtonGroup>
+          <Button variant="contained" color="primary" onClick={handleCreateClick} disabled={viewMode !== 'active'}>
             Thêm sản phẩm
           </Button>
-          <Button variant="outlined" onClick={() => setOpenCsvDialog(true)} disabled={showDeleted} sx={{ borderColor: 'divider' }}>
+          <Button variant="outlined" onClick={() => setOpenCsvDialog(true)} disabled={viewMode !== 'active'} sx={{ borderColor: 'divider' }}>
             Nhập CSV
           </Button>
-          <Button variant="outlined" onClick={() => setOpenResearchDialog(true)} disabled={showDeleted} sx={{ borderColor: colors.jade, color: colors.jade }}>
+          <Button variant="outlined" onClick={() => setOpenResearchDialog(true)} disabled={viewMode !== 'active'} sx={{ borderColor: colors.jade, color: colors.jade }}>
             Tìm sản phẩm mới bằng AI
           </Button>
         </Box>
@@ -355,12 +356,21 @@ const AdminProductPage = () => {
                   <TableCell>{productItem.name}</TableCell>
                   <TableCell>{productItem.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</TableCell>
                   <TableCell>{productItem.quantity}</TableCell>
-                  <TableCell>{productItem.is_active ? 'Có' : 'Không'}</TableCell>
+                  <TableCell>
+                    {productItem.is_active ? 'Có' : 'Không'}
+                    {productItem.is_ai_generated && (
+                      <Chip label="AI" size="small" sx={{ ml: 1, bgcolor: colors.jade, color: '#0D1210', height: 18, fontSize: '0.7rem' }} />
+                    )}
+                  </TableCell>
                   <TableCell>
                     {<Button variant="contained" color="primary" size="small" onClick={() => handleEditClick(productItem)} sx={{ mr: 1 }}>
                         Sửa
                       </Button>}
-                    {showDeleted ? (
+                    {viewMode === 'pending_ai' ? (
+                      <Button variant="contained" color="success" size="small" onClick={() => handleRestoreClick(productItem.id)}>
+                        Duyệt
+                      </Button>
+                    ) : viewMode === 'deleted' ? (
                       <Button variant="contained" color="success" size="small" onClick={() => handleRestoreClick(productItem.id)}>
                         Khôi phục
                       </Button>
