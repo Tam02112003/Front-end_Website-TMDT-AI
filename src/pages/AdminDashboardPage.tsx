@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward, TrendingUpOutlined } from '@mui/icons-material';
 import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar,
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, LabelList,
 } from 'recharts';
 import DashboardService from '../services/DashboardService';
 import { DashboardResponse } from '../types';
@@ -220,7 +220,9 @@ const AdminDashboardPage = () => {
                       tickFormatter={(name: string) => (name.length > 22 ? `${name.slice(0, 22)}…` : name)}
                     />
                     <Tooltip content={<TopProductTooltip />} cursor={{ fill: colors.surfaceRaised }} />
-                    <Bar dataKey="quantity_sold" fill={colors.jade} radius={[0, 4, 4, 0]} maxBarSize={20} />
+                    <Bar dataKey="quantity_sold" fill={colors.jade} radius={[0, 4, 4, 0]} maxBarSize={20}>
+                      <LabelList dataKey="quantity_sold" position="right" fill={colors.ink} fontSize={12} />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
