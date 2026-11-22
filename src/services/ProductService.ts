@@ -1,6 +1,6 @@
 import api from './api';
 import { Comment, CommentCreate, Review, ReviewCreate, ReviewSummary } from '../types';
-import { Product } from '../models'; // Import Product from models.ts
+import { Product, ProductResearchRequest, ProductResearchResponse } from '../models'; // Import Product from models.ts
 
 // Define ProductCreate and ProductUpdate based on the imported Product interface
 interface ProductCreate extends Omit<Product, 'id' | 'created_at' | 'updated_at' | 'discount_percent' | 'final_price'> {}
@@ -99,6 +99,10 @@ const deleteProductReview = (productId: number, reviewId: number) => {
   return api.delete(`/products/${productId}/reviews/${reviewId}`);
 };
 
+const researchProducts = (request: ProductResearchRequest) => {
+  return api.post<ProductResearchResponse>('/admin/products/research', request);
+};
+
 const getDeletedProducts = () => {
   return api.get<Product[]>('/admin/products/deleted');
 };
@@ -128,6 +132,7 @@ const ProductService = {
   deleteProductReview,
   getDeletedProducts,
   restoreProduct,
+  researchProducts,
 };
 
 export default ProductService;

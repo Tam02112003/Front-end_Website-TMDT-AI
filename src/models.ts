@@ -131,3 +131,26 @@ export interface AINewsGenerateResponse {
   sources: NewsSource[];
   images: NewsImageCandidate[];
 }
+
+export interface ProductResearchRequest {
+  topic: string;
+  keywords?: string;
+}
+
+export interface ProductCandidate {
+  name: string;
+  description?: string;
+  estimated_price?: number;
+  category_id?: number;
+  category_name?: string;
+  brand_id?: number;
+  brand_name?: string;
+  image_url?: string;
+  source_url?: string;
+}
+
+export interface ProductResearchResponse {
+  candidates: ProductCandidate[];
+  sources: NewsSource[];
+  images: NewsImageCandidate[];
+}

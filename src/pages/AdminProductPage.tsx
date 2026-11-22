@@ -6,9 +6,10 @@ import dayjs from 'dayjs';
 import ProductService from '../services/ProductService';
 import BrandService from '../services/BrandService';
 import CategoryService from '../services/CategoryService';
-import { Product, Brand, Category } from '../models';
+import { Product, Brand, Category, ProductCandidate } from '../models';
 import ImageUploader from '../components/ImageUploader';
 import RichTextEditor from '../components/RichTextEditor';
+import { colors } from '../theme';
 
 const AdminProductPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,6 +28,13 @@ const AdminProductPage = () => {
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
   const [showDeleted, setShowDeleted] = useState<boolean>(false);
+
+  const [openResearchDialog, setOpenResearchDialog] = useState<boolean>(false);
+  const [researchTopic, setResearchTopic] = useState<string>('');
+  const [researchKeywords, setResearchKeywords] = useState<string>('');
+  const [researching, setResearching] = useState<boolean>(false);
+  const [researchCandidates, setResearchCandidates] = useState<ProductCandidate[] | null>(null);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   const fetchProducts = async (query: string = '') => {
     try {
@@ -90,6 +98,48 @@ const AdminProductPage = () => {
       setOpenDialog(true);
     };
   
+    const handleResearchProducts = async () => {
+      if (!researchTopic.trim()) {
+        setResearchError('Vui lòng nhập chủ đề tìm kiếm.');
+        return;
+      }
+      setResearching(true);
+      setResearchError(null);
+      setResearchCandidates(null);
+      try {
+        const response = await ProductService.researchProducts({ topic: researchTopic, keywords: researchKeywords || undefined });
+        setResearchCandidates(response.data.candidates);
+        if (response.data.candidates.length === 0) {
+          setResearchError('Không tìm thấy sản phẩm mới phù hợp (có thể đã trùng với sản phẩm hiện có, hoặc chưa đủ thông tin thật từ nguồn tìm kiếm).');
+        }
+      } catch (err) {
+        setResearchError('Tìm kiếm sản phẩm thất bại.');
+        console.error(err);
+      } finally {
+        setResearching(false);
+      }
+    };
+
+    const handleUseCandidate = (candidate: ProductCandidate) => {
+      setCurrentProduct({
+        id: 0,
+        name: candidate.name,
+        description: candidate.description || '',
+        price: candidate.estimated_price || 0,
+        quantity: 0,
+        image_urls: candidate.image_url ? [candidate.image_url] : [],
+        is_active: false,
+        category_id: candidate.category_id,
+        brand_id: candidate.brand_id,
+        created_at: '',
+        updated_at: '',
+        release_date: undefined,
+      });
+      setIsEditing(false);
+      setOpenResearchDialog(false);
+      setOpenDialog(true);
+    };
+
     const handleEditClick = (productItem: Product) => {
       setCurrentProduct(productItem);
       setIsEditing(true);
@@ -273,6 +323,9 @@ const AdminProductPage = () => {
           </Button>
           <Button variant="outlined" onClick={() => setOpenCsvDialog(true)} disabled={showDeleted} sx={{ borderColor: 'divider' }}>
             Nhập CSV
+          </Button>
+          <Button variant="outlined" onClick={() => setOpenResearchDialog(true)} disabled={showDeleted} sx={{ borderColor: colors.jade, color: colors.jade }}>
+            Tìm sản phẩm mới bằng AI
           </Button>
         </Box>
         <TableContainer component={Paper}>
@@ -458,6 +511,88 @@ const AdminProductPage = () => {
             <Button onClick={handleUploadCsv} disabled={uploading || !selectedFile} color="primary">
               {uploading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Tải lên'}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={openResearchDialog} onClose={() => setOpenResearchDialog(false)} fullWidth maxWidth="md">
+          <DialogTitle>Tìm sản phẩm mới bằng AI</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ color: colors.muted, mb: 2 }}>
+              AI sẽ tìm kiếm web thật để tìm sản phẩm bàn phím cơ đang có trên thị trường, loại bỏ sản phẩm trùng với
+              những gì cửa hàng đã có. Sản phẩm được chọn sẽ tạo ở trạng thái <strong>ẩn, tồn kho 0</strong> - bạn cần
+              kiểm tra lại giá/thông tin rồi bật hiển thị thủ công.
+            </Typography>
+            <TextField
+              margin="dense"
+              label="Chủ đề tìm kiếm"
+              placeholder="VD: bàn phím cơ gaming mới ra mắt 2026"
+              type="text"
+              fullWidth
+              value={researchTopic}
+              onChange={(e) => setResearchTopic(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              margin="dense"
+              label="Từ khóa (tùy chọn)"
+              type="text"
+              fullWidth
+              value={researchKeywords}
+              onChange={(e) => setResearchKeywords(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <Button variant="contained" color="primary" onClick={handleResearchProducts} disabled={researching}>
+              {researching ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Tìm kiếm'}
+            </Button>
+
+            {researchError && <Alert severity="warning" sx={{ mt: 2 }}>{researchError}</Alert>}
+
+            {researchCandidates && researchCandidates.length > 0 && (
+              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {researchCandidates.map((candidate, i) => (
+                  <Box key={i} sx={{ display: 'flex', gap: 2, p: 2, border: `1px solid ${colors.border}`, borderRadius: 1 }}>
+                    {candidate.image_url && (
+                      <Box
+                        component="img"
+                        src={candidate.image_url}
+                        alt=""
+                        sx={{ width: 96, height: 72, objectFit: 'cover', borderRadius: 1, flexShrink: 0 }}
+                      />
+                    )}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography sx={{ fontWeight: 600 }}>{candidate.name}</Typography>
+                      <Typography variant="body2" sx={{ color: colors.muted, mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {candidate.description}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                        {candidate.estimated_price ? (
+                          <Typography variant="caption" sx={{ color: colors.jade, fontFamily: '"IBM Plex Mono", monospace' }}>
+                            ~{candidate.estimated_price.toLocaleString('vi-VN')} đ
+                          </Typography>
+                        ) : (
+                          <Typography variant="caption" sx={{ color: colors.muted }}>Chưa rõ giá - cần tự kiểm tra</Typography>
+                        )}
+                        {candidate.category_name && <Typography variant="caption" sx={{ color: colors.muted }}>· {candidate.category_name}</Typography>}
+                        {candidate.brand_name && <Typography variant="caption" sx={{ color: colors.muted }}>· {candidate.brand_name}</Typography>}
+                      </Box>
+                      {candidate.source_url && (
+                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                          <a href={candidate.source_url} target="_blank" rel="noopener noreferrer" style={{ color: colors.jadeBright }}>
+                            Nguồn tham khảo
+                          </a>
+                        </Typography>
+                      )}
+                    </Box>
+                    <Button variant="outlined" size="small" onClick={() => handleUseCandidate(candidate)} sx={{ alignSelf: 'center', flexShrink: 0, borderColor: colors.jade, color: colors.jade }}>
+                      Dùng sản phẩm này
+                    </Button>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenResearchDialog(false)}>Đóng</Button>
           </DialogActions>
         </Dialog>
       </Box>
