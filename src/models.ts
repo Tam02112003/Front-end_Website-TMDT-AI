@@ -115,7 +115,19 @@ export interface AINewsGenerateRequest {
   length: string;
 }
 
+export interface NewsSource {
+  title: string;
+  url: string;
+}
+
+export interface NewsImageCandidate {
+  url: string;
+  description?: string;
+}
+
 export interface AINewsGenerateResponse {
   title: string;
   content: string;
+  sources: NewsSource[];
+  images: NewsImageCandidate[];
 }

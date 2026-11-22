@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, Select, MenuItem } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, Select, MenuItem, Link as MuiLink } from '@mui/material';
+import { OpenInNewOutlined } from '@mui/icons-material';
 import { getNews, createNews, updateNews, deleteNews, generateAINews, getDeletedNews, restoreNews } from '../services/NewsService';
 import ImageUploader from '../components/ImageUploader';
 import RichTextEditor from '../components/RichTextEditor';
-import { News } from '../models';
+import { News, AINewsGenerateResponse } from '../models';
 import { colors } from '../theme';
 
 const AdminNewsPage = () => {
@@ -19,8 +20,9 @@ const AdminNewsPage = () => {
   const [aiTopic, setAiTopic] = useState<string>('');
   const [aiKeywords, setAiKeywords] = useState<string>('');
   const [aiLength, setAiLength] = useState<string>('vừa phải');
-  const [aiGeneratedContent, setAiGeneratedContent] = useState<{ title: string; content: string } | null>(null);
+  const [aiGeneratedContent, setAiGeneratedContent] = useState<AINewsGenerateResponse | null>(null);
   const [aiGenerating, setAiGenerating] = useState<boolean>(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
   const fetchNews = async () => {
     try {
@@ -129,6 +131,7 @@ const AdminNewsPage = () => {
   const handleGenerateAINews = async () => {
     setAiGenerating(true);
     setAiGeneratedContent(null);
+    setSelectedImageUrl(null);
     try {
       const response = await generateAINews({
         topic: aiTopic,
@@ -136,6 +139,9 @@ const AdminNewsPage = () => {
         length: aiLength,
       });
       setAiGeneratedContent(response.data);
+      if (response.data.images.length > 0) {
+        setSelectedImageUrl(response.data.images[0].url);
+      }
     } catch (err) {
       setError('Tạo tin bằng AI thất bại.');
       console.error(err);
@@ -146,11 +152,17 @@ const AdminNewsPage = () => {
 
   const handleUseGeneratedContent = () => {
     if (aiGeneratedContent) {
+      const sourcesHtml = aiGeneratedContent.sources.length > 0
+        ? `<h3>Nguồn tham khảo</h3><ul>${aiGeneratedContent.sources.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.title}</a></li>`).join('')}</ul>`
+        : '';
+      const heroImageHtml = selectedImageUrl
+        ? `<img src="${selectedImageUrl}" alt="${aiGeneratedContent.title}" style="max-width:100%;border-radius:8px;margin-bottom:16px;" />`
+        : '';
       setCurrentNews({
         id: 0,
         title: aiGeneratedContent.title,
-        content: aiGeneratedContent.content,
-        image_url: '',
+        content: heroImageHtml + aiGeneratedContent.content + sourcesHtml,
+        image_url: selectedImageUrl ?? '',
         is_active: true,
         created_at: '',
         updated_at: '',
@@ -285,7 +297,7 @@ const AdminNewsPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openAIDialog} onClose={() => setOpenAIDialog(false)} fullWidth maxWidth="sm">
+      <Dialog open={openAIDialog} onClose={() => setOpenAIDialog(false)} fullWidth maxWidth="md">
         <DialogTitle>Tạo tin bằng AI</DialogTitle>
         <DialogContent>
           <TextField
@@ -321,10 +333,68 @@ const AdminNewsPage = () => {
           </Button>
           {aiGeneratedContent && (
             <Box sx={{ mt: 3, p: 2, border: `1px solid ${colors.border}`, borderRadius: 1 }}>
-              <Typography variant="h6">Tiêu đề tạo ra:</Typography>
-              <Typography>{aiGeneratedContent.title}</Typography>
-              <Typography variant="h6" sx={{ mt: 2 }}>Nội dung tạo ra:</Typography>
-              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{aiGeneratedContent.content}</Typography>
+              <Typography variant="h6">{aiGeneratedContent.title}</Typography>
+
+              {aiGeneratedContent.images.length > 0 && (
+                <Box sx={{ mt: 1.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: colors.muted, mb: 1 }}>
+                    Chọn ảnh đại diện (lấy từ kết quả tìm kiếm thật)
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {aiGeneratedContent.images.map((img, i) => (
+                      <Box
+                        key={i}
+                        onClick={() => setSelectedImageUrl(img.url)}
+                        title={img.description}
+                        sx={{
+                          width: 96,
+                          height: 72,
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          border: `2px solid ${selectedImageUrl === img.url ? colors.jade : 'transparent'}`,
+                          opacity: selectedImageUrl === img.url ? 1 : 0.6,
+                          transition: 'opacity 0.15s ease, border-color 0.15s ease',
+                          '&:hover': { opacity: 1 },
+                        }}
+                      >
+                        <Box component="img" src={img.url} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              <Box
+                sx={{
+                  mt: 1.5,
+                  color: colors.ink,
+                  '& h2, & h3': { color: colors.ink, mt: 2, mb: 1 },
+                  '& p': { mb: 1, lineHeight: 1.6 },
+                  '& ul': { pl: 3, mb: 1 },
+                }}
+                dangerouslySetInnerHTML={{ __html: aiGeneratedContent.content }}
+              />
+              {aiGeneratedContent.sources.length > 0 && (
+                <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${colors.border}` }}>
+                  <Typography variant="subtitle2" sx={{ color: colors.muted, mb: 1 }}>
+                    Nguồn tham khảo ({aiGeneratedContent.sources.length})
+                  </Typography>
+                  {aiGeneratedContent.sources.map((source, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                      <OpenInNewOutlined sx={{ fontSize: 14, color: colors.muted }} />
+                      <MuiLink href={source.url} target="_blank" rel="noopener noreferrer" sx={{ color: colors.jadeBright, fontSize: '0.875rem' }}>
+                        {source.title}
+                      </MuiLink>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+              {aiGeneratedContent.sources.length === 0 && (
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  Không tìm thấy nguồn tin thật nào - nội dung này có thể thiếu thông tin mới. Hãy kiểm tra kỹ trước khi đăng.
+                </Alert>
+              )}
               <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleUseGeneratedContent}>
                 Dùng nội dung này
               </Button>
