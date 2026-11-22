@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, TextField, Typography, Paper, CircularProgress, IconButton, Fab } from '@mui/material';
+import { Box, TextField, Typography, Paper, CircularProgress, IconButton, Fab, Link as MuiLink } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatbotService from '../services/ChatbotService';
 import { v4 as uuidv4 } from 'uuid';
 import { colors } from '../theme';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -65,66 +67,34 @@ const Chatbot = () => {
     }
   };
 
-  const cleanText = (text: string) => {
-    let cleaned = text
-      .replace(/[[\\]*]/g, '')
-      .trim();
-    cleaned = cleaned.replace(/\. /g, '.\n');
-    cleaned = cleaned.replace(/: /g, ':\n');
-    return cleaned;
+  const markdownComponents = {
+    p: ({ children }: any) => <Typography variant="body1" sx={{ mb: 1, '&:last-child': { mb: 0 } }}>{children}</Typography>,
+    h1: ({ children }: any) => <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 1, mb: 0.5 }}>{children}</Typography>,
+    h2: ({ children }: any) => <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 1, mb: 0.5 }}>{children}</Typography>,
+    h3: ({ children }: any) => <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 1, mb: 0.5 }}>{children}</Typography>,
+    ul: ({ children }: any) => <Box component="ul" sx={{ pl: 3, m: 0, mb: 1 }}>{children}</Box>,
+    ol: ({ children }: any) => <Box component="ol" sx={{ pl: 3, m: 0, mb: 1 }}>{children}</Box>,
+    li: ({ children }: any) => <Typography component="li" variant="body2" sx={{ mb: 0.25 }}>{children}</Typography>,
+    a: ({ children, href }: any) => <MuiLink href={href} target="_blank" rel="noopener noreferrer" sx={{ color: colors.jadeBright }}>{children}</MuiLink>,
+    img: ({ src, alt }: any) => (
+      <Box component="img" src={src} alt={alt || ''} sx={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', mt: 1, display: 'block' }} />
+    ),
+    hr: () => <Box component="hr" sx={{ border: 'none', borderTop: `1px solid ${colors.border}`, my: 1 }} />,
+    code: ({ children }: any) => (
+      <Box component="code" sx={{ bgcolor: colors.bg, border: `1px solid ${colors.border}`, borderRadius: '4px', px: 0.5, fontFamily: '"IBM Plex Mono", monospace', fontSize: '0.85em' }}>
+        {children}
+      </Box>
+    ),
+    table: ({ children }: any) => <Box component="table" sx={{ borderCollapse: 'collapse', width: '100%', mb: 1, fontSize: '0.85em' }}>{children}</Box>,
+    th: ({ children }: any) => <Box component="th" sx={{ border: `1px solid ${colors.border}`, p: 0.5, textAlign: 'left' }}>{children}</Box>,
+    td: ({ children }: any) => <Box component="td" sx={{ border: `1px solid ${colors.border}`, p: 0.5 }}>{children}</Box>,
   };
 
-const renderMessageContent = (content: string) => {
-  // Giữ link ảnh, bỏ "[Xem ảnh(...)]"
-  content = content.replace(/\[Xem ảnh\((.*?)\)\]/gi, '$1');
-
-  // Loại bỏ "- Hình ảnh:" và các dòng chỉ có "-"
-  content = content.replace(/- *Hình ảnh:*/gi, '');
-  content = content.replace(/^- *$/gm, '');
-
-  const parts: (string | JSX.Element)[] = [];
-  const regex = /!\[.*?\]\((.*?)\)|(https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|bmp|svg|webp))/gi;
-  let lastIndex = 0;
-  let match;
-
-  while ((match = regex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      const textPart = content.substring(lastIndex, match.index);
-      parts.push(textPart);
-    }
-
-    const imageUrl = match[1] || match[0];
-    parts.push(
-      <img
-        key={`image-${lastIndex}`}
-        src={imageUrl}
-        alt=""
-        style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', marginTop: '8px' }}
-      />
-    );
-
-    lastIndex = regex.lastIndex;
-  }
-
-  if (lastIndex < content.length) {
-    const textPart = content.substring(lastIndex);
-    parts.push(textPart);
-  }
-
-  return parts.map((part, i) => {
-    if (typeof part === 'string') {
-      const cleaned = cleanText(part);
-      return cleaned.split('\n').map((line, j) => (
-        line.trim() && <Typography key={`text-${i}-${j}`} variant="body1">{line.trim()}</Typography>
-      ));
-    }
-    return part;
-  });
-};
-
-
-
-
+  const renderMessageContent = (content: string) => (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+      {content}
+    </ReactMarkdown>
+  );
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
   };
