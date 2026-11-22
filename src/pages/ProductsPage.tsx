@@ -23,6 +23,7 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [useAiSearch, setUseAiSearch] = useState<boolean>(false);
   const [filters, setFilters] = useState<{ brand_id?: number; category_id?: number; min_price?: number; max_price?: number; }>({});
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -48,7 +49,9 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await ProductService.getAllProducts(searchQuery, filters.category_id, filters.brand_id, filters.min_price, filters.max_price);
+        const response = useAiSearch && searchQuery.trim()
+          ? await ProductService.semanticSearchProducts(searchQuery.trim())
+          : await ProductService.getAllProducts(searchQuery, filters.category_id, filters.brand_id, filters.min_price, filters.max_price);
         setProducts(response.data);
         setError(null);
       } catch (err) {
@@ -64,7 +67,7 @@ const ProductsPage = () => {
     }, 400);
 
     return () => clearTimeout(handler);
-  }, [searchQuery, filters]);
+  }, [searchQuery, filters, useAiSearch]);
 
   const handleFilterChange = (newFilters: { brand_id?: number; category_id?: number; min_price?: number; max_price?: number; }) => {
     setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
@@ -116,21 +119,43 @@ const ProductsPage = () => {
           Bàn phím cơ, switch và keycap — lọc theo thương hiệu, danh mục hoặc khoảng giá bạn cần.
         </Typography>
 
-        <TextField
-          placeholder="Tìm sản phẩm..."
-          variant="outlined"
-          fullWidth
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ maxWidth: { xs: '100%', sm: 600 } }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><Search sx={{ color: colors.muted }} /></InputAdornment>,
-            endAdornment: loading && <InputAdornment position="end"><CircularProgress size={18} sx={{ color: colors.jade }} /></InputAdornment>,
-          }}
-        />
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', maxWidth: { xs: '100%', sm: 600 } }}>
+          <TextField
+            placeholder={useAiSearch ? 'Mô tả nhu cầu, vd: bàn phím êm cho văn phòng...' : 'Tìm sản phẩm...'}
+            variant="outlined"
+            fullWidth
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><Search sx={{ color: colors.muted }} /></InputAdornment>,
+              endAdornment: loading && <InputAdornment position="end"><CircularProgress size={18} sx={{ color: colors.jade }} /></InputAdornment>,
+            }}
+          />
+          <Chip
+            icon={<AutoFixHighOutlined sx={{ fontSize: 16 }} />}
+            label="Tìm bằng AI"
+            onClick={() => setUseAiSearch((prev) => !prev)}
+            sx={{
+              flexShrink: 0,
+              bgcolor: useAiSearch ? colors.jade : 'transparent',
+              color: useAiSearch ? '#0D1210' : colors.muted,
+              border: `1px solid ${useAiSearch ? colors.jade : colors.border}`,
+              fontWeight: 600,
+              '& .MuiChip-icon': { color: useAiSearch ? '#0D1210' : colors.muted },
+              '&:hover': { borderColor: colors.jade },
+            }}
+          />
+        </Box>
+        {useAiSearch && (
+          <Typography variant="caption" sx={{ color: colors.muted, display: 'block', mt: 1 }}>
+            Đang tìm theo mô tả bằng AI — bộ lọc thương hiệu/danh mục/giá tạm thời không áp dụng.
+          </Typography>
+        )}
       </Box>
 
-      <ProductFilter brands={brands} categories={categories} filters={filters} onFilterChange={handleFilterChange} />
+      {!useAiSearch && (
+        <ProductFilter brands={brands} categories={categories} filters={filters} onFilterChange={handleFilterChange} />
+      )}
 
       {products.length === 0 && !loading ? (
         <Paper sx={{ p: { xs: 4, md: 6 }, textAlign: 'center' }}>

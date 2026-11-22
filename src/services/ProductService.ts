@@ -55,6 +55,10 @@ const getCsvUploadJobStatus = (jobId: string) => {
   return api.get<CsvUploadJobStatus>(`/products/upload/status/${jobId}`);
 };
 
+const semanticSearchProducts = (query: string, limit = 20) => {
+  return api.get<Product[]>('/products/search/semantic', { params: { q: query, limit } });
+};
+
 const getProductRecommendations = (productId: number) => {
   return api.get<Product[]>(`/products/${productId}/recommendations`);
 };
@@ -111,6 +115,7 @@ const ProductService = {
   deleteProduct,
   uploadProductsCsv,
   getCsvUploadJobStatus,
+  semanticSearchProducts,
   getProductRecommendations,
   readProductComments,
   createCommentForProduct,
