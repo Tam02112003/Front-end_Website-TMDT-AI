@@ -5,6 +5,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatbotService from '../services/ChatbotService';
 import { v4 as uuidv4 } from 'uuid';
+import { colors } from '../theme';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -140,15 +141,16 @@ const renderMessageContent = (content: string) => {
             flexDirection: 'column',
             borderRadius: '12px',
             overflow: 'hidden',
+            border: `1px solid ${colors.border}`,
           }}
         >
-          <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">AI Chatbot</Typography>
-            <IconButton onClick={toggleChatbot} size="small" sx={{ color: 'white' }}>
+          <Box sx={{ p: 2, bgcolor: colors.jade, color: '#0D1210', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ color: '#0D1210' }}>AI Chatbot</Typography>
+            <IconButton onClick={toggleChatbot} size="small" sx={{ color: '#0D1210' }}>
               <CloseIcon />
             </IconButton>
           </Box>
-          <Box sx={{ flexGrow: 1, p: 2, overflowY: 'auto', bgcolor: '#f5f5f5' }}>
+          <Box sx={{ flexGrow: 1, p: 2, overflowY: 'auto', bgcolor: colors.bg }}>
             {messages.map((msg, index) => (
               <Box
                 key={index}
@@ -163,7 +165,9 @@ const renderMessageContent = (content: string) => {
                   sx={{
                     p: 1.5,
                     borderRadius: '20px',
-                    bgcolor: msg.role === 'user' ? '#e0f7fa' : '#ffffff',
+                    bgcolor: msg.role === 'user' ? colors.jade : colors.surfaceRaised,
+                    borderColor: colors.border,
+                    color: msg.role === 'user' ? '#0D1210' : colors.ink,
                     maxWidth: '80%',
                     wordBreak: 'break-word',
                   }}
@@ -171,19 +175,19 @@ const renderMessageContent = (content: string) => {
                   {msg.role === 'assistant' ? (
                     renderMessageContent(msg.content)
                   ) : (
-                    <Typography variant="body1">{msg.content}</Typography>
+                    <Typography variant="body1" sx={{ color: '#0D1210' }}>{msg.content}</Typography>
                   )}
                 </Paper>
               </Box>
             ))}
             {loading && (
               <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
-                <CircularProgress size={20} />
+                <CircularProgress size={20} sx={{ color: colors.jade }} />
               </Box>
             )}
             <div ref={messagesEndRef} />
           </Box>
-          <Box sx={{ p: 2, borderTop: '1px solid #ccc', display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ p: 2, borderTop: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', bgcolor: colors.surface }}>
             <TextField
               fullWidth
               variant="outlined"
