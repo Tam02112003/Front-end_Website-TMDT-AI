@@ -139,6 +139,7 @@ export interface ProductResearchRequest {
 }
 
 export interface ProductCandidate {
+  id: number;
   name: string;
   description?: string;
   estimated_price?: number;

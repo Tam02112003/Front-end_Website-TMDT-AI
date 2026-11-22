@@ -114,7 +114,7 @@ const AdminProductPage = () => {
         if (response.data.candidates.length === 0) {
           setResearchError('Không tìm thấy sản phẩm mới phù hợp (có thể đã trùng với sản phẩm hiện có, hoặc chưa đủ thông tin thật từ nguồn tìm kiếm).');
         }
-      } catch (err) {
+      } catch (err: any) {
         setResearchError('Tìm kiếm sản phẩm thất bại.');
         console.error(err);
       } finally {
@@ -123,21 +123,25 @@ const AdminProductPage = () => {
     };
 
     const handleUseCandidate = (candidate: ProductCandidate) => {
+      // The candidate was already inserted into the products table (pending
+      // review) by the research endpoint - this opens it for editing, it does
+      // NOT create a new row. Using isEditing:false here would double-create it.
       setCurrentProduct({
-        id: 0,
+        id: candidate.id,
         name: candidate.name,
         description: candidate.description || '',
         price: candidate.estimated_price || 0,
         quantity: 0,
         image_urls: candidate.image_url ? [candidate.image_url] : [],
         is_active: false,
+        is_ai_generated: true,
         category_id: candidate.category_id,
         brand_id: candidate.brand_id,
         created_at: '',
         updated_at: '',
         release_date: undefined,
       });
-      setIsEditing(false);
+      setIsEditing(true);
       setOpenResearchDialog(false);
       setOpenDialog(true);
     };
@@ -529,8 +533,9 @@ const AdminProductPage = () => {
           <DialogContent>
             <Typography variant="body2" sx={{ color: colors.muted, mb: 2 }}>
               AI sẽ tìm kiếm web thật để tìm sản phẩm bàn phím cơ đang có trên thị trường, loại bỏ sản phẩm trùng với
-              những gì cửa hàng đã có. Sản phẩm được chọn sẽ tạo ở trạng thái <strong>ẩn, tồn kho 0</strong> - bạn cần
-              kiểm tra lại giá/thông tin rồi bật hiển thị thủ công.
+              những gì cửa hàng đã có. Mọi sản phẩm tìm thấy được <strong>tự động lưu vào hàng chờ duyệt</strong> (ẩn,
+              tồn kho 0, giá 0 nếu nguồn không nêu giá) ngay cả khi bạn đóng cửa sổ này - vào tab <strong>"Chờ duyệt AI"</strong> để
+              kiểm tra giá/thông tin rồi duyệt.
             </Typography>
             <TextField
               margin="dense"
@@ -558,7 +563,11 @@ const AdminProductPage = () => {
             {researchError && <Alert severity="warning" sx={{ mt: 2 }}>{researchError}</Alert>}
 
             {researchCandidates && researchCandidates.length > 0 && (
-              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ mt: 3 }}>
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  Đã lưu {researchCandidates.length} sản phẩm vào hàng chờ duyệt AI.
+                </Alert>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {researchCandidates.map((candidate, i) => (
                   <Box key={i} sx={{ display: 'flex', gap: 2, p: 2, border: `1px solid ${colors.border}`, borderRadius: 1 }}>
                     {candidate.image_url && (
@@ -594,15 +603,25 @@ const AdminProductPage = () => {
                       )}
                     </Box>
                     <Button variant="outlined" size="small" onClick={() => handleUseCandidate(candidate)} sx={{ alignSelf: 'center', flexShrink: 0, borderColor: colors.jade, color: colors.jade }}>
-                      Dùng sản phẩm này
+                      Sửa ngay
                     </Button>
                   </Box>
                 ))}
+                </Box>
               </Box>
             )}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenResearchDialog(false)}>Đóng</Button>
+            {researchCandidates && researchCandidates.length > 0 && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => { setOpenResearchDialog(false); setViewMode('pending_ai'); }}
+              >
+                Xem trong "Chờ duyệt AI"
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
       </Box>
