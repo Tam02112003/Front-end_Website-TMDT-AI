@@ -1,5 +1,5 @@
 import api from './api';
-import { Comment, CommentCreate } from '../types';
+import { Comment, CommentCreate, Review, ReviewCreate, ReviewSummary } from '../types';
 import { Product } from '../models'; // Import Product from models.ts
 
 // Define ProductCreate and ProductUpdate based on the imported Product interface
@@ -55,6 +55,26 @@ const deleteProductComment = (productId: number, commentId: number) => {
   return api.delete(`/products/${productId}/comments/${commentId}`);
 };
 
+const readProductReviews = (productId: number) => {
+  return api.get<Review[]>(`/products/${productId}/reviews`);
+};
+
+const readProductReviewSummary = (productId: number) => {
+  return api.get<ReviewSummary>(`/products/${productId}/reviews/summary`);
+};
+
+const createReviewForProduct = (productId: number, reviewData: ReviewCreate) => {
+  return api.post<Review>(`/products/${productId}/reviews`, reviewData);
+};
+
+const updateProductReview = (productId: number, reviewId: number, reviewData: ReviewCreate) => {
+  return api.put<Review>(`/products/${productId}/reviews/${reviewId}`, reviewData);
+};
+
+const deleteProductReview = (productId: number, reviewId: number) => {
+  return api.delete(`/products/${productId}/reviews/${reviewId}`);
+};
+
 const getDeletedProducts = () => {
   return api.get<Product[]>('/admin/products/deleted');
 };
@@ -75,6 +95,11 @@ const ProductService = {
   createCommentForProduct,
   updateProductComment,
   deleteProductComment,
+  readProductReviews,
+  readProductReviewSummary,
+  createReviewForProduct,
+  updateProductReview,
+  deleteProductReview,
   getDeletedProducts,
   restoreProduct,
 };

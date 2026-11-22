@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Product } from '../models';
 import { TrendingUp, KeyboardAltOutlined, AutoFixHighOutlined } from '@mui/icons-material';
 import Countdown from '../components/Countdown';
+import ReviewStars from '../components/ReviewStars';
 import { colors } from '../theme';
 
 import '../styles/responsive.css';
@@ -39,10 +40,13 @@ const ProductCard = ({ product }: { product: Product }) => (
     )}
     <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-        <Typography variant="body1" sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1.5 }}>
+        <Typography variant="body1" sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1 }}>
           {product.name}
         </Typography>
       </RouterLink>
+      <Box sx={{ mb: 1 }}>
+        <ReviewStars rating={product.avg_rating} reviewCount={product.review_count} />
+      </Box>
       {product.discount_percent && product.final_price !== undefined ? (
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="body2" sx={{ color: colors.muted, textDecoration: 'line-through' }}>{formatVnd(product.price)}</Typography>

@@ -9,6 +9,7 @@ import CategoryService from '../services/CategoryService';
 import { useAuth } from '../context/AuthContext';
 import Countdown from '../components/Countdown';
 import ProductFilter from '../components/ProductFilter';
+import ReviewStars from '../components/ReviewStars';
 import { Search, ShoppingCartOutlined, AutoFixHighOutlined } from '@mui/icons-material';
 import { colors } from '../theme';
 import '../styles/responsive.css';
@@ -157,10 +158,14 @@ const ProductsPage = () => {
 
                 <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <Typography variant="body1" sx={{ fontWeight: 600, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1.5 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 600, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1 }}>
                       {product.name}
                     </Typography>
                   </Link>
+
+                  <Box sx={{ mb: 1 }}>
+                    <ReviewStars rating={product.avg_rating} reviewCount={product.review_count} />
+                  </Box>
 
                   {product.release_date && new Date(product.release_date) > new Date() ? (
                     <Countdown releaseDate={product.release_date} />

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import CommentItem from '../components/CommentItem';
+import ReviewItem from '../components/ReviewItem';
+import ReviewStars from '../components/ReviewStars';
 import { useParams } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Button, TextField, Snackbar, List, IconButton } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Card, CardMedia, CardContent, Button, TextField, Snackbar, List, IconButton, Rating } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import api from '../services/api';
@@ -11,7 +13,7 @@ import ProductService from '../services/ProductService'; // Import ProductServic
 import ProductRecommendation from '../components/ProductRecommendation';
 import Countdown from '../components/Countdown';
 import { Product } from '../models'; // Import Product from models.ts
-import { Comment, CommentCreate, CartItem } from '../types'; // Import Comment and CommentCreate
+import { Comment, CommentCreate, CartItem, Review } from '../types'; // Import Comment and CommentCreate
 import { AutoFixHighOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { colors } from '../theme';
@@ -45,6 +47,14 @@ const ProductDetailPage = () => {
   // Reply states
   const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState<string>('');
+
+  // Review states
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewLoading, setReviewLoading] = useState<boolean>(true);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [reviewForm, setReviewForm] = useState<{ rating: number; content: string }>({ rating: 5, content: '' });
+  const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
 
   // Helper function to build a comment tree
   const buildCommentTree = (comments: Comment[]) => {
@@ -130,6 +140,70 @@ const ProductDetailPage = () => {
 
     fetchComments();
   }, [productId]);
+
+  // Fetch reviews effect
+  const fetchReviews = async () => {
+    if (!productId) return;
+    try {
+      setReviewLoading(true);
+      const response = await ProductService.readProductReviews(parseInt(productId));
+      setReviews(response.data);
+    } catch (err) {
+      setReviewError('Không tải được đánh giá.');
+      console.error(err);
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [productId]);
+
+  const myReview = reviews.find((r) => user && r.user_id === user.id);
+
+  const handleStartEditReview = (review: Review) => {
+    setEditingReview(review);
+    setReviewForm({ rating: review.rating, content: review.content ?? '' });
+  };
+
+  const handleCancelReviewForm = () => {
+    setEditingReview(null);
+    setReviewForm({ rating: 5, content: '' });
+  };
+
+  const handleSubmitReview = async () => {
+    if (!productId) return;
+    setReviewSubmitting(true);
+    try {
+      if (editingReview) {
+        await ProductService.updateProductReview(parseInt(productId), editingReview.id, reviewForm);
+        setFeedback({ open: true, message: 'Cập nhật đánh giá thành công!', severity: 'success' });
+      } else {
+        await ProductService.createReviewForProduct(parseInt(productId), reviewForm);
+        setFeedback({ open: true, message: 'Gửi đánh giá thành công!', severity: 'success' });
+      }
+      handleCancelReviewForm();
+      await fetchReviews();
+    } catch (err) {
+      setFeedback({ open: true, message: 'Gửi đánh giá thất bại.', severity: 'error' });
+      console.error(err);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!productId) return;
+    try {
+      await ProductService.deleteProductReview(parseInt(productId), reviewId);
+      setFeedback({ open: true, message: 'Đã xóa đánh giá.', severity: 'success' });
+      await fetchReviews();
+    } catch (err) {
+      setFeedback({ open: true, message: 'Xóa đánh giá thất bại.', severity: 'error' });
+      console.error(err);
+    }
+  };
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -348,6 +422,9 @@ const ProductDetailPage = () => {
               <Typography variant="h5" component="h1" gutterBottom>
                 {product.name}
               </Typography>
+              <Box sx={{ mb: 1 }}>
+                <ReviewStars rating={product.avg_rating} reviewCount={product.review_count} />
+              </Box>
               {isDiscountActive(product) ? (
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap', mb: 1 }}>
                   <Typography sx={{ color: colors.muted, textDecoration: 'line-through' }}>{formatVnd(product.price)}</Typography>
@@ -413,6 +490,85 @@ const ProductDetailPage = () => {
           Mô tả sản phẩm
         </Typography>
         <div dangerouslySetInnerHTML={{ __html: product.description || '' }} style={{ whiteSpace: 'pre-wrap' }} />
+      </Box>
+
+      {/* Reviews Section */}
+      <Box sx={{ mt: 4, p: 3, border: `1px solid ${colors.border}`, borderRadius: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+          <Typography variant="h5">Đánh giá sản phẩm</Typography>
+          <ReviewStars rating={product.avg_rating} reviewCount={product.review_count} size="medium" />
+        </Box>
+
+        {reviewLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+            <CircularProgress sx={{ color: colors.jade }} />
+          </Box>
+        ) : reviewError ? (
+          <Alert severity="error">{reviewError}</Alert>
+        ) : reviews.length === 0 ? (
+          <Typography sx={{ color: colors.muted }}>Chưa có đánh giá nào. Hãy là người đầu tiên!</Typography>
+        ) : (
+          <Box>
+            {reviews.map((review) => (
+              <ReviewItem
+                key={review.id}
+                review={review}
+                canManage={!!user && (user.id === review.user_id || user.is_admin)}
+                onEdit={handleStartEditReview}
+                onDelete={handleDeleteReview}
+              />
+            ))}
+          </Box>
+        )}
+
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            {editingReview ? 'Sửa đánh giá của bạn' : 'Viết đánh giá'}
+          </Typography>
+          {isLoggedIn ? (
+            myReview && !editingReview ? (
+              <Typography sx={{ color: colors.muted }}>
+                Bạn đã đánh giá sản phẩm này. Nhấn biểu tượng sửa ở đánh giá của bạn để chỉnh sửa.
+              </Typography>
+            ) : (
+              <>
+                <Rating
+                  value={reviewForm.rating}
+                  onChange={(_e, value) => setReviewForm((prev) => ({ ...prev, rating: value ?? 5 }))}
+                  sx={{ color: colors.camel, mb: 1.5 }}
+                />
+                <TextField
+                  label="Nhận xét (tùy chọn)"
+                  multiline
+                  rows={3}
+                  fullWidth
+                  variant="outlined"
+                  value={reviewForm.content}
+                  onChange={(e) => setReviewForm((prev) => ({ ...prev, content: e.target.value }))}
+                  sx={{ mb: 2 }}
+                  disabled={reviewSubmitting}
+                />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSubmitReview}
+                    disabled={reviewSubmitting}
+                  >
+                    {reviewSubmitting ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : (editingReview ? 'Lưu thay đổi' : 'Gửi đánh giá')}
+                  </Button>
+                  {editingReview && (
+                    <Button variant="outlined" onClick={handleCancelReviewForm} disabled={reviewSubmitting} sx={{ borderColor: colors.border, color: colors.ink }}>
+                      Hủy
+                    </Button>
+                  )}
+                </Box>
+              </>
+            )
+          ) : (
+            <Alert severity="info">Đăng nhập để viết đánh giá.</Alert>
+          )}
+        </Box>
       </Box>
 
       {/* Comments Section */}

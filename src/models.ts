@@ -47,6 +47,8 @@ export interface Product {
   brand_id?: number;
   category_id?: number;
   quantity?: number;
+  avg_rating?: number;
+  review_count?: number;
 }
 
 export interface OrderItem {
