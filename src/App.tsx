@@ -14,6 +14,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
 import AdminLayout from './components/AdminLayout';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminOrderPage from './pages/AdminOrderPage';
 import AdminUserPage from './pages/AdminUserPage';
 import AdminNewsPage from './pages/AdminNewsPage';
@@ -52,6 +53,8 @@ function App() {
         </Route>
         <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
         <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="orders" element={<AdminOrderPage />} />
           <Route path="users" element={<AdminUserPage />} />
           <Route path="news" element={<AdminNewsPage />} />

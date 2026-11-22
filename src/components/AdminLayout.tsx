@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItemText, ListItemIcon, CircularProgress, Snackbar, Alert, ListItemButton } from '@mui/material';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined } from '@mui/icons-material';
+import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined, TrendingUpOutlined } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import AdminService from '../services/AdminService';
 import { colors } from '../theme';
@@ -9,6 +9,7 @@ import { colors } from '../theme';
 const drawerWidth = 240;
 
 const navItems = [
+  { to: '/admin/dashboard', label: 'Tổng quan', icon: TrendingUpOutlined },
   { to: '/admin/orders', label: 'Đơn hàng', icon: ShoppingCartOutlined },
   { to: '/admin/users', label: 'Người dùng', icon: PeopleOutlined },
   { to: '/admin/news', label: 'Tin tức', icon: ArticleOutlined },
