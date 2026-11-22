@@ -5,7 +5,8 @@ import ProductsPage from './pages/ProductsPage';
 import TryOnPage from './pages/TryOnPage';
 import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import theme from './theme';
 import ProductDetailPage from './pages/ProductDetailPage';
 import RegisterPage from './pages/RegisterPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -27,19 +28,6 @@ import ProfilePage from './pages/ProfilePage';
 import AdminImageGalleryPage from './pages/AdminImageGalleryPage';
 
 import OrderResultPage from './pages/OrderResultPage';
-
-// A more defined theme
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 function App() {
   return (

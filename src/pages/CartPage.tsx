@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Typography, Box, CircularProgress, Alert, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, Button, Paper, Divider, Container, Card, CardContent } from '@mui/material';
-import { Add, Remove, Delete, ShoppingCart, ArrowForward } from '@mui/icons-material';
+import { Add, Remove, Delete, ShoppingCartOutlined, ArrowForward } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CartService from '../services/CartService';
 import api from '../services/api';
+import { colors } from '../theme';
 import '../styles/responsive.css';
+
+const formatVnd = (amount: number) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
 interface Product {
   id: number;
@@ -98,24 +101,16 @@ const CartPage = () => {
   if (!isLoggedIn) {
     return (
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 8 }, textAlign: 'center' }} className="responsive-container">
-        <Paper sx={{ p: { xs: 4, md: 6 }, borderRadius: 3 }}>
-          <ShoppingCart sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+        <Paper sx={{ p: { xs: 4, md: 6 } }}>
+          <ShoppingCartOutlined sx={{ fontSize: 64, color: colors.muted, mb: 2 }} />
           <Typography variant="h5" gutterBottom>
-            Please log in to view your cart
+            Đăng nhập để xem giỏ hàng
           </Typography>
-          <Typography variant="body1" className="responsive-body" color="text.secondary" sx={{ mb: 3 }}>
-            You need to be signed in to access your shopping cart.
+          <Typography className="responsive-body" sx={{ color: colors.muted, mb: 3 }}>
+            Bạn cần đăng nhập để truy cập giỏ hàng.
           </Typography>
-            <Button 
-              variant="contained" 
-              component={Link} 
-              to="/login"
-              size="large"
-              color="primary"
-              className="touch-target"
-              sx={{ borderRadius: 2 }}
-            >
-            Sign In
+          <Button variant="contained" component={Link} to="/login" size="large" color="primary" className="touch-target">
+            Đăng nhập
           </Button>
         </Paper>
       </Container>
@@ -126,7 +121,7 @@ const CartPage = () => {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }} className="responsive-container">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <CircularProgress size={40} />
+          <CircularProgress size={40} sx={{ color: colors.jade }} />
         </Box>
       </Container>
     );
@@ -135,182 +130,133 @@ const CartPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
-        <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>
+        <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
-      <Typography 
-        variant="h3" 
-        className="responsive-heading-1"
-        sx={{ 
-          fontWeight: 700,
-          fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-          background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          mb: 4
-        }}
-      >
-        Your Shopping Cart
+      <Typography variant="h3" className="responsive-heading-1" sx={{ fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.6rem' }, mb: 4 }}>
+        Giỏ hàng
       </Typography>
-      
+
       {items.length === 0 ? (
-        <Paper sx={{ p: { xs: 4, md: 6 }, textAlign: 'center', borderRadius: 3 }}>
-          <ShoppingCart sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+        <Paper sx={{ p: { xs: 4, md: 6 }, textAlign: 'center' }}>
+          <ShoppingCartOutlined sx={{ fontSize: 64, color: colors.muted, mb: 2 }} />
           <Typography variant="h5" gutterBottom>
-            Your cart is empty
+            Giỏ hàng trống
           </Typography>
-          <Typography variant="body1" className="responsive-body" color="text.secondary" sx={{ mb: 3 }}>
-            Looks like you haven't added any items to your cart yet.
+          <Typography className="responsive-body" sx={{ color: colors.muted, mb: 3 }}>
+            Bạn chưa thêm sản phẩm nào vào giỏ hàng.
           </Typography>
-          <Button 
-            component={Link} 
-            to="/products" 
-            variant="contained" 
-            size="large"
-            color="primary"
-            startIcon={<ShoppingCart />}
-            className="touch-target"
-            sx={{ borderRadius: 2 }}
-          >
-            Continue Shopping
+          <Button component={Link} to="/products" variant="contained" size="large" color="primary" startIcon={<ShoppingCartOutlined />} className="touch-target">
+            Tiếp tục mua sắm
           </Button>
         </Paper>
       ) : (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 2, md: 4 } }}>
           <Box sx={{ width: { xs: '100%', lg: 'calc(66.66% - 16px)' } }}>
-            <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <Paper sx={{ overflow: 'hidden' }}>
               <List sx={{ p: 0 }}>
                 {items.map((item, index) => (
                   <Box key={item.product_id}>
                     <ListItem sx={{ p: { xs: 2, md: 3 }, flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                       <ListItemAvatar>
-                        <Avatar 
-                          variant="rounded" 
-                          src={item.product_details.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=150'} 
-                          sx={{ width: { xs: 60, sm: 80 }, height: { xs: 60, sm: 80 }, mr: { xs: 0, sm: 2 }, mb: { xs: 2, sm: 0 } }} 
+                        <Avatar
+                          variant="rounded"
+                          src={item.product_details.image_urls?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/d/df/Mechanical_keyboard_example.jpg'}
+                          sx={{ width: { xs: 60, sm: 80 }, height: { xs: 60, sm: 80 }, mr: { xs: 0, sm: 2 }, mb: { xs: 2, sm: 0 } }}
                         />
                       </ListItemAvatar>
                       <ListItemText
                         sx={{ flex: 1, mb: { xs: 2, sm: 0 } }}
                         primary={
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                          <Typography sx={{ fontWeight: 600, mb: 1 }}>
                             {item.product_details.name}
                           </Typography>
                         }
                         secondary={
                           item.product_details.final_price !== undefined && item.product_details.final_price < item.product_details.price ? (
                             <Box>
-                              <Typography component="span" variant="body2" sx={{ textDecoration: 'line-through', mr: 1, color: 'text.secondary' }}>
-                                {item.product_details.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                              <Typography component="span" variant="body2" sx={{ textDecoration: 'line-through', mr: 1, color: colors.muted }}>
+                                {formatVnd(item.product_details.price)}
                               </Typography>
-                              <Typography component="span" variant="h6" color="error.main" sx={{ fontWeight: 600 }}>
-                                {item.product_details.final_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                              <Typography component="span" sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.camel }}>
+                                {formatVnd(item.product_details.final_price)}
                               </Typography>
                             </Box>
                           ) : (
-                            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 600 }}>
-                              {item.product_details.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                            <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.camel }}>
+                              {formatVnd(item.product_details.price)}
                             </Typography>
                           )
                         }
                       />
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexDirection: { xs: 'column', sm: 'row' }, width: { xs: '100%', sm: 'auto' } }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                          <IconButton 
-                            size="small"
-                            className="touch-target"
-                            onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
-                            sx={{ borderRadius: 0 }}
-                          >
-                            <Remove />
+                        <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid ${colors.border}` }}>
+                          <IconButton size="small" className="touch-target" onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)} sx={{ borderRadius: 0 }}>
+                            <Remove fontSize="small" />
                           </IconButton>
                           <Typography sx={{ px: { xs: 3, sm: 2 }, py: 1, minWidth: { xs: 50, sm: 40 }, textAlign: 'center', fontWeight: 600 }}>
                             {item.quantity}
                           </Typography>
-                          <IconButton 
-                            size="small"
-                            className="touch-target"
-                            onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
-                            sx={{ borderRadius: 0 }}
-                          >
-                            <Add />
+                          <IconButton size="small" className="touch-target" onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)} sx={{ borderRadius: 0 }}>
+                            <Add fontSize="small" />
                           </IconButton>
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 700, minWidth: { xs: 'auto', sm: 80 }, textAlign: { xs: 'center', sm: 'right' } }}>
-                          {((item.product_details.final_price !== undefined ? item.product_details.final_price : item.product_details.price) * item.quantity).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, minWidth: { xs: 'auto', sm: 90 }, textAlign: { xs: 'center', sm: 'right' } }}>
+                          {formatVnd((item.product_details.final_price ?? item.product_details.price) * item.quantity)}
                         </Typography>
-                        <IconButton 
-                          edge="end" 
-                          aria-label="delete" 
-                          onClick={() => handleRemoveItem(item.product_id)}
-                          color="error"
-                          className="touch-target"
-                        >
-                          <Delete />
+                        <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveItem(item.product_id)} sx={{ color: colors.danger }} className="touch-target">
+                          <Delete fontSize="small" />
                         </IconButton>
                       </Box>
                     </ListItem>
-                    {index < items.length - 1 && <Divider />}
+                    {index < items.length - 1 && <Divider sx={{ borderColor: colors.border }} />}
                   </Box>
                 ))}
               </List>
             </Paper>
           </Box>
-          
+
           <Box sx={{ width: { xs: '100%', lg: 'calc(33.33% - 16px)' } }}>
-            <Card sx={{ borderRadius: 3, position: { xs: 'static', lg: 'sticky' }, top: 24 }}>
+            <Card sx={{ position: { xs: 'static', lg: 'sticky' }, top: 24 }}>
               <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                  Order Summary
+                <Typography variant="h6" gutterBottom>
+                  Tóm tắt đơn hàng
                 </Typography>
-                <Divider sx={{ my: 2 }} />
-                
+                <Divider sx={{ my: 2, borderColor: colors.border }} />
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                  <Typography variant="body1">
-                    Subtotal ({items.reduce((total, item) => total + item.quantity, 0)} items)
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                  </Typography>
+                  <Typography>Tạm tính ({items.reduce((total, item) => total + item.quantity, 0)} sản phẩm)</Typography>
+                  <Typography sx={{ fontWeight: 600 }}>{formatVnd(calculateTotal())}</Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                  <Typography variant="body1">Shipping</Typography>
-                  <Typography variant="body1" color="success.main" sx={{ fontWeight: 600 }}>
-                    Free
-                  </Typography>
+                  <Typography>Vận chuyển</Typography>
+                  <Typography sx={{ color: colors.jade, fontWeight: 600 }}>Miễn phí</Typography>
                 </Box>
-                
-                <Divider sx={{ my: 2 }} />
-                
+
+                <Divider sx={{ my: 2, borderColor: colors.border }} />
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Total</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+                  <Typography variant="h6">Tổng cộng</Typography>
+                  <Typography variant="h6" sx={{ fontFamily: '"IBM Plex Mono", monospace', color: colors.camel }}>{formatVnd(calculateTotal())}</Typography>
                 </Box>
-                
-                <Button 
-                  component={Link} 
-                  to="/checkout" 
-                  variant="contained" 
+
+                <Button
+                  component={Link}
+                  to="/checkout"
+                  variant="contained"
                   fullWidth
                   size="large"
                   color="primary"
                   endIcon={<ArrowForward />}
                   className="touch-target"
-                  sx={{ 
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    textTransform: 'none'
-                  }}
+                  sx={{ py: 1.5 }}
                 >
-                  Proceed to Checkout
+                  Tiến hành thanh toán
                 </Button>
               </CardContent>
             </Card>

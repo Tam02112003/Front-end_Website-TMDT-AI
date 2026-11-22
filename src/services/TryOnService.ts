@@ -1,7 +1,7 @@
 import api from './api';
 
 interface TryOnRequest {
-  product_image_url: string;
+  product_id: number;
   user_image_base64: string;
 }
 

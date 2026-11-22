@@ -1,125 +1,120 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Box, Typography, Button, CircularProgress, Alert } from '@mui/material';
+import { useLocation, Link as RouterLink } from 'react-router-dom';
+import { Box, Typography, Button, CircularProgress, Alert, Paper, Container } from '@mui/material';
+import { AutoFixHighOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { performTryOn } from '../services/TryOnService';
+import { colors } from '../theme';
+
+interface TryOnLocationState {
+  productId?: number;
+  productName?: string;
+  productImage?: string;
+}
 
 const TryOnPage = () => {
   const location = useLocation();
-  const { productImageUrl } = location.state || {};
+  const { productId, productName, productImage } = (location.state as TryOnLocationState) || {};
 
-  const [selectedProductImage] = useState<string | null>(productImageUrl || null);
   const [selectedUserImage, setSelectedUserImage] = useState<string | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedUserImage(reader.result as string); // Store Base64 string
-      };
+      reader.onloadend = () => setSelectedUserImage(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
   const handleTryOn = async () => {
-    if (!selectedProductImage || !selectedUserImage) {
-      setError('Please select both a product and a user image.');
+    if (!productId || !selectedUserImage) {
+      setError('Cần có sản phẩm và ảnh của bạn trước khi ghép.');
       return;
     }
-
     setLoading(true);
     setError(null);
     setTryOnResult(null);
-
     try {
-      const result = await performTryOn({
-        product_image_url: selectedProductImage,
-        user_image_base64: selectedUserImage,
-      });
-
+      const result = await performTryOn({ product_id: productId, user_image_base64: selectedUserImage });
       if (result.result_image_url) {
         setTryOnResult(result.result_image_url);
-      } else if (result.detail) {
-        // Handle error details from the external API
-        setError(result.detail);
-      } else if (result.error) {
-        // Handle generic error from the external API
-        setError(result.error);
       } else {
-        setError('Unknown error occurred during try-on.');
+        setError(result.detail || result.error || 'AI không tạo được ảnh ghép, thử lại nhé.');
       }
-
     } catch (err) {
-      setError('Failed to perform try-on. Please try again.');
+      setError('Ghép AI thất bại, thử lại sau.');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>AI Try-On</Typography>
+    <Container maxWidth="md">
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" sx={{ mb: 1 }}>Ghép thử AI</Typography>
+        <Typography sx={{ color: colors.muted }}>
+          Tính năng thử nghiệm vui: tải ảnh của bạn lên, AI sẽ ghép sản phẩm vào khung hình. Kết quả mang tính minh họa, không phản ánh chính xác kích thước/màu sắc thật.
+        </Typography>
+      </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-      {!productImageUrl && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          Please select a product image from the products page to use the AI Try-On feature.
+      {!productId && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Chưa chọn sản phẩm. Vào <RouterLink to="/products" style={{ color: colors.jadeBright }}>trang sản phẩm</RouterLink> và bấm "Ghép thử AI" trên một sản phẩm trước.
         </Alert>
       )}
 
-      {selectedProductImage && (
-        <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ mb: 1 }}>Selected Product Image</Typography>
-          <img src={selectedProductImage} alt="Selected Product" style={{ maxWidth: '200px', border: '1px solid #ccc' }} />
-        </Box>
-      )}
+      <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+        <Paper sx={{ p: 3, flex: 1, minWidth: 240 }}>
+          <Typography variant="overline" sx={{ color: colors.muted, letterSpacing: 0 }}>Sản phẩm</Typography>
+          {productImage ? (
+            <Box component="img" src={productImage} alt={productName || 'Sản phẩm'} sx={{ width: '100%', borderRadius: 1, mt: 1, border: `1px solid ${colors.border}` }} />
+          ) : (
+            <Box sx={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, mt: 1 }}>Chưa chọn</Box>
+          )}
+          {productName && <Typography sx={{ mt: 1.5, fontWeight: 600 }}>{productName}</Typography>}
+        </Paper>
 
-      <Typography variant="h5" sx={{ mt: 3, mb: 1 }}>Upload Your Image</Typography>
-      <input
-        accept="image/*"
-        style={{ display: 'none' }}
-        id="user-avatar-upload-button"
-        type="file"
-        onChange={handleFileChange}
-      />
-      <label htmlFor="user-avatar-upload-button">
-        <Button variant="contained" component="span">
-          Upload Avatar
-        </Button>
-      </label>
-
-      {selectedUserImage && (
-        <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>Uploaded Avatar</Typography>
-          <img src={selectedUserImage} alt="Uploaded Avatar" style={{ maxWidth: '200px', border: '1px solid #ccc' }} />
-        </Box>
-      )}
+        <Paper sx={{ p: 3, flex: 1, minWidth: 240 }}>
+          <Typography variant="overline" sx={{ color: colors.muted, letterSpacing: 0 }}>Ảnh của bạn</Typography>
+          {selectedUserImage ? (
+            <Box component="img" src={selectedUserImage} alt="Ảnh đã tải lên" sx={{ width: '100%', borderRadius: 1, mt: 1, border: `1px solid ${colors.border}` }} />
+          ) : (
+            <Box sx={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, mt: 1 }}>Chưa có ảnh</Box>
+          )}
+          <input accept="image/*" style={{ display: 'none' }} id="user-avatar-upload-button" type="file" onChange={handleFileChange} />
+          <label htmlFor="user-avatar-upload-button">
+            <Button component="span" variant="outlined" startIcon={<UploadFileOutlined />} sx={{ mt: 2, borderColor: colors.border, color: colors.ink }} fullWidth>
+              Tải ảnh lên
+            </Button>
+          </label>
+        </Paper>
+      </Box>
 
       <Button
         variant="contained"
         color="primary"
-        sx={{ mt: 4 }}
+        size="large"
+        startIcon={!loading && <AutoFixHighOutlined />}
+        sx={{ mt: 3 }}
         onClick={handleTryOn}
-        disabled={loading || !selectedProductImage || !selectedUserImage}
+        disabled={loading || !productId || !selectedUserImage}
       >
-        {loading ? <CircularProgress size={24} /> : 'Try On'}
+        {loading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Ghép AI'}
       </Button>
 
       {tryOnResult && (
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Typography variant="h5" gutterBottom>Try-On Result</Typography>
-          <img src={tryOnResult} alt="Try-On Result" style={{ maxWidth: '100%', height: 'auto', border: '1px solid #ccc' }} />
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" sx={{ mb: 1.5 }}>Kết quả</Typography>
+          <Box component="img" src={tryOnResult} alt="Kết quả ghép AI" sx={{ maxWidth: '100%', borderRadius: 1, border: `1px solid ${colors.border}` }} />
         </Box>
       )}
-    </Box>
+    </Container>
   );
 };
 

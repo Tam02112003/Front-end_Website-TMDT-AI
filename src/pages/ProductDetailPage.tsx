@@ -12,11 +12,15 @@ import ProductRecommendation from '../components/ProductRecommendation';
 import Countdown from '../components/Countdown';
 import { Product } from '../models'; // Import Product from models.ts
 import { Comment, CommentCreate, CartItem } from '../types'; // Import Comment and CommentCreate
+import { AutoFixHighOutlined } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { colors } from '../theme';
 
-// This comment is added to force re-compilation
+const formatVnd = (amount: number) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
 const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
+  const navigate = useNavigate();
   const { isLoggedIn, user } = useAuth(); // Get user from useAuth
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -262,7 +266,7 @@ const ProductDetailPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: colors.jade }} />
       </Box>
     );
   }
@@ -272,7 +276,7 @@ const ProductDetailPage = () => {
   }
 
   if (!product) {
-    return <Alert severity="info">Product not found.</Alert>;
+    return <Alert severity="info">Không tìm thấy sản phẩm.</Alert>;
   }
 
   return (
@@ -280,7 +284,7 @@ const ProductDetailPage = () => {
       <Card>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ width: { xs: '100%', md: 'calc(66.66% - 8px)' } }}>
-            <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', borderRadius: 2, boxShadow: 3 }}>
+            <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%', overflow: 'hidden', bgcolor: '#0D0E10' }}>
               {product.image_urls && product.image_urls.length > 0 ? (
                 <CardMedia
                   component="img"
@@ -292,48 +296,47 @@ const ProductDetailPage = () => {
                 <CardMedia
                   component="img"
                   sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-                  image={'https://via.placeholder.com/400'}
+                  image={'https://upload.wikimedia.org/wikipedia/commons/d/df/Mechanical_keyboard_example.jpg'}
                   alt={product.name}
                 />
               )}
               {product.image_urls && product.image_urls.length > 1 && (
                 <>
                   <IconButton
-                    sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(255,255,255,0.7)', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(22,24,28,0.7)', color: colors.ink, '&:hover': { bgcolor: 'rgba(22,24,28,0.9)' } }}
                     onClick={handlePreviousImage}
                     disabled={currentImageIndex === 0}
                   >
-                    <ArrowBackIosIcon />
+                    <ArrowBackIosIcon fontSize="small" />
                   </IconButton>
                   <IconButton
-                    sx={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(255,255,255,0.7)', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    sx={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(22,24,28,0.7)', color: colors.ink, '&:hover': { bgcolor: 'rgba(22,24,28,0.9)' } }}
                     onClick={handleNextImage}
                     disabled={currentImageIndex === (product.image_urls.length - 1)}
                   >
-                    <ArrowForwardIosIcon />
+                    <ArrowForwardIosIcon fontSize="small" />
                   </IconButton>
                 </>
               )}
             </Box>
             {/* Thumbnails */}
             {product.image_urls && product.image_urls.length > 1 && (
-              <Box sx={{ display: 'flex', overflowX: 'auto', gap: 1, mt: 2, p: 1, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+              <Box sx={{ display: 'flex', overflowX: 'auto', gap: 1, mt: 2, p: 1, border: `1px solid ${colors.border}` }}>
                 {product.image_urls.map((url, index) => (
                   <CardMedia
                     key={index}
                     component="img"
                     sx={{
-                      width: '100px', 
-                      height: '100px', 
-                      objectFit: 'cover', 
+                      width: '100px',
+                      height: '100px',
+                      objectFit: 'cover',
                       flexShrink: 0,
                       cursor: 'pointer',
-                      border: index === currentImageIndex ? '2px solid primary.main' : '2px solid transparent',
-                      borderRadius: 1,
-                      '&:hover': { borderColor: 'primary.light' }
+                      border: index === currentImageIndex ? `2px solid ${colors.jade}` : '2px solid transparent',
+                      '&:hover': { borderColor: colors.jade }
                     }}
                     image={url}
-                    alt={`Thumbnail ${index + 1}`}
+                    alt={`Ảnh ${index + 1}`}
                     onClick={() => setCurrentImageIndex(index)}
                   />
                 ))}
@@ -342,65 +345,61 @@ const ProductDetailPage = () => {
           </Box>
           <Box sx={{ width: { xs: '100%', md: 'calc(33.33% - 8px)' } }}>
             <CardContent>
-              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                  {product.name}
-                </Typography>
-              </Box>
-              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-                {isDiscountActive(product) ? (
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                    <Typography variant="h5" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                      {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                    </Typography>
-                    <Typography variant="h4" color="error">
-                      {product.final_price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                    </Typography>
-                    <Typography variant="body2" color="error">
-                      ({product.discount_percent}% OFF)
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Typography variant="h5" color="text.secondary" gutterBottom>
-                    {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+              <Typography variant="h5" component="h1" gutterBottom>
+                {product.name}
+              </Typography>
+              {isDiscountActive(product) ? (
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                  <Typography sx={{ color: colors.muted, textDecoration: 'line-through' }}>{formatVnd(product.price)}</Typography>
+                  <Typography variant="h5" sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.camel }}>
+                    {formatVnd(product.final_price ?? product.price)}
                   </Typography>
-                )}
-              </Box>
+                  <Typography variant="body2" sx={{ color: colors.danger }}>(-{product.discount_percent}%)</Typography>
+                </Box>
+              ) : (
+                <Typography variant="h5" sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.camel, mb: 1 }}>
+                  {formatVnd(product.price)}
+                </Typography>
+              )}
               {product.release_date && new Date(product.release_date) > new Date() && (
                 <Countdown releaseDate={product.release_date} />
               )}
-              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-                <Typography variant="body2" color="text.secondary">
-                  In stock: {product.quantity ?? 0}
-                </Typography>
+              <Typography variant="body2" sx={{ color: colors.muted, mt: 1 }}>
+                Còn hàng: {product.quantity ?? 0}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, gap: 2 }}>
+                <TextField
+                  label="SL"
+                  type="number"
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity ?? 1, parseInt(e.target.value, 10) || 1)))}
+                  sx={{ width: '80px' }}
+                  inputProps={{ min: 1, max: (product.quantity as number) ?? 1 }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAddToCart}
+                  disabled={!isLoggedIn || addLoading || (product.quantity ?? 0) === 0 || quantity > (product.quantity ?? 0) || !!(product.release_date && new Date(product.release_date) > new Date())}
+                  sx={{ flex: 1 }}
+                >
+                  {addLoading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Thêm giỏ hàng'}
+                </Button>
               </Box>
-              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TextField
-                    label="Qty"
-                    type="number"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    variant="outlined"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity ?? 1, parseInt(e.target.value, 10) || 1)))}
-                    sx={{ width: '80px', mr: 2 }}
-                    inputProps={{ min: 1, max: (product.quantity as number) ?? 1 }}
-                  />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleAddToCart}
-                    disabled={!isLoggedIn || addLoading || (product.quantity ?? 0) === 0 || quantity > (product.quantity ?? 0) || !!(product.release_date && new Date(product.release_date) > new Date())}
-                  >
-                    {addLoading ? <CircularProgress size={24} /> : 'Add to Cart'}
-                  </Button>
-                </Box>
-              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<AutoFixHighOutlined />}
+                fullWidth
+                sx={{ mt: 1.5, borderColor: colors.border, color: colors.ink, '&:hover': { borderColor: colors.camel, color: colors.camel } }}
+                onClick={() => navigate('/try-on', { state: { productId: product.id, productName: product.name, productImage: product.image_urls?.[0] } })}
+              >
+                Ghép thử AI
+              </Button>
               {!isLoggedIn && (
-                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-                  Please log in to add items to your cart.
+                <Typography variant="caption" sx={{ color: colors.danger, mt: 1, display: 'block' }}>
+                  Đăng nhập để thêm vào giỏ hàng.
                 </Typography>
               )}
             </CardContent>
@@ -409,9 +408,9 @@ const ProductDetailPage = () => {
       </Card>
 
       {/* Product Description */}
-      <Box sx={{ mt: 4, p: 3, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+      <Box sx={{ mt: 4, p: 3, border: `1px solid ${colors.border}`, borderRadius: 1 }}>
         <Typography variant="h6" gutterBottom>
-          Product Description
+          Mô tả sản phẩm
         </Typography>
         <div dangerouslySetInnerHTML={{ __html: product.description || '' }} style={{ whiteSpace: 'pre-wrap' }} />
       </Box>
@@ -419,16 +418,16 @@ const ProductDetailPage = () => {
       {/* Comments Section */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom>
-          Comments
+          Bình luận
         </Typography>
         {commentLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: colors.jade }} />
           </Box>
         ) : commentError ? (
           <Alert severity="error">{commentError}</Alert>
         ) : comments.length === 0 ? (
-          <Typography>No comments yet. Be the first to comment!</Typography>
+          <Typography sx={{ color: colors.muted }}>Chưa có bình luận nào. Hãy là người đầu tiên!</Typography>
         ) : (
           <List>
             {buildCommentTree(comments).map((comment) => (
@@ -460,12 +459,12 @@ const ProductDetailPage = () => {
         {/* Add New Comment Form */}
         <Box sx={{ mt: 3 }}>
           <Typography variant="h6" gutterBottom>
-            Add a Comment
+            Viết bình luận
           </Typography>
           {isLoggedIn ? (
             <>
               <TextField
-                label="Your Comment"
+                label="Nội dung"
                 multiline
                 rows={4}
                 fullWidth
@@ -481,12 +480,12 @@ const ProductDetailPage = () => {
                 onClick={() => handlePostComment(null)}
                 disabled={commentLoading || !newCommentContent.trim()}
               >
-                {commentLoading ? <CircularProgress size={24} /> : 'Post Comment'}
+                {commentLoading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Đăng bình luận'}
               </Button>
             </>
           ) : (
             <Alert severity="info">
-              Please log in to post a comment.
+              Đăng nhập để viết bình luận.
             </Alert>
           )}
         </Box>

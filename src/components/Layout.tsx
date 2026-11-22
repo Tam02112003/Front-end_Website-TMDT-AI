@@ -1,10 +1,23 @@
-import { AppBar, Box, Button, Container, Toolbar, Typography, Avatar, Menu, MenuItem, IconButton, Badge } from '@mui/material';
+import { AppBar, Box, Button, Container, Toolbar, Typography, Avatar, Menu, MenuItem, IconButton, Badge, Divider } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, Store, AutoAwesome, Article, Person, ExitToApp, Menu as MenuIcon } from '@mui/icons-material';
+import { ShoppingCartOutlined, KeyboardAltOutlined, ArticleOutlined, PersonOutline, LogoutOutlined, MenuOutlined } from '@mui/icons-material';
 import { useState } from 'react';
 import '../styles/responsive.css';
 import Chatbot from './Chatbot';
+import { colors } from '../theme';
+
+const navLinkSx = {
+  textTransform: 'none',
+  fontWeight: 500,
+  color: colors.muted,
+  px: 2,
+  borderRadius: 1,
+  '&:hover': {
+    color: colors.ink,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+};
 
 const Layout = () => {
   const { isLoggedIn, user, logout } = useAuth();
@@ -41,136 +54,53 @@ const Layout = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar 
-        position="static" 
-        sx={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-        }}
-      >
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: colors.bg }}>
+      <AppBar position="static">
         <Container maxWidth="xl" className="responsive-container">
           <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
-            {/* Logo */}
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              <Button
-                color="inherit"
-                component={Link}
-                to="/"
-                sx={{
-                  fontSize: '1.25rem',
-                  fontWeight: 700,
-                  textTransform: 'none',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                <AutoAwesome sx={{ mr: 1 }} />
-                MinhTam AI Shop
-              </Button>
-            </Typography>
-
-            {/* Mobile Menu Button */}
-            <IconButton
+            <Button
               color="inherit"
-              onClick={toggleMobileMenu}
-              sx={{ 
-                display: { xs: 'block', md: 'none' },
-                '&:hover': {
-                  backgroundColor: 'rgba(255,255,255,0.1)'
-                }
+              component={Link}
+              to="/"
+              sx={{
+                fontFamily: '"IBM Plex Mono", monospace',
+                fontSize: '1.15rem',
+                fontWeight: 700,
+                textTransform: 'none',
+                color: colors.ink,
+                gap: 1,
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.04)' },
               }}
             >
-              <MenuIcon />
+              <KeyboardAltOutlined sx={{ color: colors.jade }} />
+              TamStore
+            </Button>
+
+            <IconButton
+              onClick={toggleMobileMenu}
+              sx={{ display: { xs: 'block', md: 'none' }, color: colors.ink }}
+            >
+              <MenuOutlined />
             </IconButton>
 
-            {/* Desktop Navigation Links */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/products"
-                startIcon={<Store />}
-                sx={{ 
-                  textTransform: 'none',
-                  display: { xs: 'none', md: 'flex' },
-                  fontWeight: 500,
-                  px: 2,
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                Products
+              <Button component={Link} to="/products" startIcon={<KeyboardAltOutlined />} sx={{ ...navLinkSx, display: { xs: 'none', md: 'flex' } }}>
+                Sản phẩm
               </Button>
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/news"
-                startIcon={<Article />}
-                sx={{ 
-                  textTransform: 'none',
-                  display: { xs: 'none', md: 'flex' },
-                  fontWeight: 500,
-                  px: 2,
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                News
+              <Button component={Link} to="/news" startIcon={<ArticleOutlined />} sx={{ ...navLinkSx, display: { xs: 'none', md: 'flex' } }}>
+                Tin tức
               </Button>
-              
-              {/* Cart Button */}
-              <IconButton 
-                color="inherit" 
-                component={Link} 
-                to="/cart"
-                className="touch-target"
-                sx={{ 
-                  mx: 1,
-                  display: { xs: 'none', sm: 'flex' },
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                <Badge color="error">
-                  <ShoppingCart />
+
+              <IconButton component={Link} to="/cart" className="touch-target" sx={{ mx: 1, display: { xs: 'none', sm: 'flex' }, color: colors.ink }}>
+                <Badge color="secondary">
+                  <ShoppingCartOutlined />
                 </Badge>
               </IconButton>
 
-              {/* User Menu */}
               {isLoggedIn ? (
                 <>
-                  <IconButton
-                    className="touch-target"
-                    onClick={handleMenuOpen}
-                    sx={{ 
-                      ml: 1,
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.1)'
-                      }
-                    }}
-                  >
-                    <Avatar 
-                      sx={{ 
-                        width: 32, 
-                        height: 32,
-                        bgcolor: 'rgba(255,255,255,0.2)',
-                        border: '2px solid rgba(255,255,255,0.3)'
-                      }}
-                    >
+                  <IconButton className="touch-target" onClick={handleMenuOpen} sx={{ ml: 1 }}>
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: colors.jade, color: '#0D1210', fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700 }}>
                       {user?.username?.charAt(0).toUpperCase()}
                     </Avatar>
                   </IconButton>
@@ -179,98 +109,32 @@ const Layout = () => {
                     open={Boolean(anchorEl)}
                     onClose={handleMenuClose}
                     PaperProps={{
-                      sx: {
-                        mt: 1,
-                        minWidth: 200,
-                        borderRadius: 2,
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
-                      }
+                      sx: { mt: 1, minWidth: 200, bgcolor: colors.surfaceRaised, border: `1px solid ${colors.border}` },
                     }}
                   >
-                    <MenuItem onClick={handleProfileClick}>
-                      <Person sx={{ mr: 2 }} />
-                      Profile
-                    </MenuItem>
-                    <MenuItem onClick={handleOrdersClick}>
-                      <ShoppingCart sx={{ mr: 2 }} />
-                      Orders
-                    </MenuItem>
-                    <MenuItem onClick={handleLogout}>
-                      <ExitToApp sx={{ mr: 2 }} />
-                      Logout
-                    </MenuItem>
+                    <MenuItem onClick={handleProfileClick}><PersonOutline sx={{ mr: 2 }} fontSize="small" />Hồ sơ</MenuItem>
+                    <MenuItem onClick={handleOrdersClick}><ShoppingCartOutlined sx={{ mr: 2 }} fontSize="small" />Đơn hàng</MenuItem>
+                    <Divider sx={{ borderColor: colors.border }} />
+                    <MenuItem onClick={handleLogout}><LogoutOutlined sx={{ mr: 2 }} fontSize="small" />Đăng xuất</MenuItem>
                   </Menu>
                 </>
               ) : (
-                <Button 
-                  color="inherit" 
-                  component={Link} 
-                  to="/login"
-                  variant="outlined"
-                  className="touch-target"
-                  sx={{ 
-                    ml: 2,
-                    borderColor: 'rgba(255,255,255,0.5)',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    '&:hover': {
-                      borderColor: 'white',
-                      backgroundColor: 'rgba(255,255,255,0.1)'
-                    }
-                  }}
-                >
-                  Login
+                <Button component={Link} to="/login" variant="outlined" color="primary" className="touch-target" sx={{ ml: 1 }}>
+                  Đăng nhập
                 </Button>
               )}
             </Box>
           </Toolbar>
         </Container>
-        
-        {/* Mobile Navigation Menu */}
-        <Box
-          sx={{
-            display: { xs: mobileMenuOpen ? 'block' : 'none', md: 'none' },
-            bgcolor: 'rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(10px)',
-            borderTop: '1px solid rgba(255,255,255,0.1)'
-          }}
-        >
-          <Container maxWidth="xl" className="responsive-container">
-            <Box sx={{ py: 2 }}>
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/products"
-                fullWidth
-                startIcon={<Store />}
-                onClick={() => setMobileMenuOpen(false)}
-                sx={{ 
-                  justifyContent: 'flex-start',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  py: 1.5,
-                  mb: 1
-                }}
-              >
-                Products
-              </Button>
 
-              <Button 
-                color="inherit" 
-                component={Link} 
-                to="/news"
-                fullWidth
-                startIcon={<Article />}
-                onClick={() => setMobileMenuOpen(false)}
-                sx={{ 
-                  justifyContent: 'flex-start',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  py: 1.5,
-                  mb: 1
-                }}
-              >
-                News
+        <Box sx={{ display: { xs: mobileMenuOpen ? 'block' : 'none', md: 'none' }, borderTop: `1px solid ${colors.border}` }}>
+          <Container maxWidth="xl" className="responsive-container">
+            <Box sx={{ py: 1 }}>
+              <Button component={Link} to="/products" fullWidth startIcon={<KeyboardAltOutlined />} onClick={() => setMobileMenuOpen(false)} sx={{ ...navLinkSx, justifyContent: 'flex-start', py: 1.5, mb: 1 }}>
+                Sản phẩm
+              </Button>
+              <Button component={Link} to="/news" fullWidth startIcon={<ArticleOutlined />} onClick={() => setMobileMenuOpen(false)} sx={{ ...navLinkSx, justifyContent: 'flex-start', py: 1.5, mb: 1 }}>
+                Tin tức
               </Button>
             </Box>
           </Container>
@@ -283,24 +147,13 @@ const Layout = () => {
 
       <Chatbot />
 
-      <Box
-        component="footer"
-        sx={{
-          py: 4,
-          px: 2,
-          mt: 'auto',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white'
-        }}
-      >
+      <Box component="footer" sx={{ py: 4, px: 2, mt: 'auto', borderTop: `1px solid ${colors.border}`, bgcolor: colors.surface }}>
         <Container maxWidth="xl" className="responsive-container">
-          <Typography variant="body1" align="center" sx={{ fontWeight: 500 }}>
-            {'Copyright © '}
-            <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-              MinhTam AI Shop
-            </Link>{' '}
+          <Typography variant="body2" align="center" sx={{ color: colors.muted }}>
+            {'© '}
+            <Link to="/" style={{ color: colors.muted, textDecoration: 'none' }}>TamStore</Link>{' '}
             {new Date().getFullYear()}
-            {'. Experience the future of fashion.'}
+            {' — Bàn phím cơ & phụ kiện cho dân gõ phím.'}
           </Typography>
         </Container>
       </Box>

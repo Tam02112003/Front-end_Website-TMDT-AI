@@ -7,6 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import OrderService from '../services/OrderService';
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { Product } from '../models';
+import { colors } from '../theme';
+
+const formatVnd = (amount: number) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
 interface CartItem {
   id: number;
@@ -157,7 +160,7 @@ const CheckoutPage = () => {
   };
 
   if (loading && !sepayQrUrl) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}><CircularProgress sx={{ color: colors.jade }} /></Box>;
   }
 
   if (error) {
@@ -168,17 +171,17 @@ const CheckoutPage = () => {
   if (sepayQrUrl) {
     return (
       <Paper sx={{ p: 4, maxWidth: 500, margin: 'auto', textAlign: 'center' }}>
-        <Typography variant="h5" gutterBottom>Scan QR Code to Pay</Typography>
-        <img src={sepayQrUrl} alt="Sepay QR Code" style={{ maxWidth: '100%', height: 'auto' }} />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Total Amount: {calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+        <Typography variant="h5" gutterBottom>Quét mã QR để thanh toán</Typography>
+        <img src={sepayQrUrl} alt="Mã QR Sepay" style={{ maxWidth: '100%', height: 'auto' }} />
+        <Typography variant="h6" sx={{ mt: 2, fontFamily: '"IBM Plex Mono", monospace', color: colors.camel }}>
+          Tổng: {formatVnd(calculateTotal())}
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          Please scan the QR code with your banking app to complete the payment.
+        <Typography sx={{ color: colors.muted, mt: 1 }}>
+          Quét mã QR bằng app ngân hàng để hoàn tất thanh toán.
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
-          <CircularProgress size={20} sx={{ mr: 1 }} />
-          <Typography variant="body2">Waiting for payment confirmation...</Typography>
+          <CircularProgress size={20} sx={{ mr: 1, color: colors.jade }} />
+          <Typography variant="body2" sx={{ color: colors.muted }}>Đang chờ xác nhận thanh toán...</Typography>
         </Box>
       </Paper>
     );
@@ -187,7 +190,7 @@ const CheckoutPage = () => {
   if (cartItems.length === 0) {
     return (
       <Alert severity="info">
-        Your cart is empty. <Button onClick={() => navigate('/products')}>Continue Shopping</Button>
+        Giỏ hàng trống. <Button onClick={() => navigate('/products')}>Tiếp tục mua sắm</Button>
       </Alert>
     );
   }
@@ -196,38 +199,38 @@ const CheckoutPage = () => {
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
       <Box sx={{ width: { xs: '100%', md: 'calc(58.33% - 12px)' } }}>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom>Shipping Address</Typography>
-          <TextField fullWidth label="Address" name="address" value={shippingAddress.address} onChange={handleAddressChange} margin="normal" required />
-          <TextField fullWidth label="City" name="city" value={shippingAddress.city} onChange={handleAddressChange} margin="normal" required />
-          <TextField fullWidth label="Postal Code" name="postalCode" value={shippingAddress.postalCode} onChange={handleAddressChange} margin="normal" required />
-          <TextField fullWidth label="Country" name="country" value={shippingAddress.country} onChange={handleAddressChange} margin="normal" required />
-          <TextField fullWidth label="Phone Number" name="phoneNumber" value={shippingAddress.phoneNumber} onChange={handleAddressChange} margin="normal" required />
+          <Typography variant="h6" gutterBottom>Địa chỉ giao hàng</Typography>
+          <TextField fullWidth label="Địa chỉ" name="address" value={shippingAddress.address} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Thành phố" name="city" value={shippingAddress.city} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Mã bưu điện" name="postalCode" value={shippingAddress.postalCode} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Quốc gia" name="country" value={shippingAddress.country} onChange={handleAddressChange} margin="normal" required />
+          <TextField fullWidth label="Số điện thoại" name="phoneNumber" value={shippingAddress.phoneNumber} onChange={handleAddressChange} margin="normal" required />
         </Paper>
         <Paper sx={{ p: 3, mt: 3 }}>
-          <Typography variant="h5" gutterBottom>Payment Method</Typography>
+          <Typography variant="h6" gutterBottom>Phương thức thanh toán</Typography>
           <FormControl component="fieldset" margin="normal">
-            <FormLabel component="legend">Select a payment method</FormLabel>
+            <FormLabel component="legend" sx={{ color: colors.muted }}>Chọn phương thức</FormLabel>
             <RadioGroup name="paymentMethod" value={paymentMethod} onChange={handlePaymentMethodChange}>
-              <FormControlLabel value="cod" control={<Radio />} label="Cash on Delivery" />
-              <FormControlLabel value="sepay" control={<Radio />} label="Sepay" />
+              <FormControlLabel value="cod" control={<Radio sx={{ color: colors.muted, '&.Mui-checked': { color: colors.jade } }} />} label="Thanh toán khi nhận hàng (COD)" />
+              <FormControlLabel value="sepay" control={<Radio sx={{ color: colors.muted, '&.Mui-checked': { color: colors.jade } }} />} label="Chuyển khoản qua Sepay" />
             </RadioGroup>
           </FormControl>
         </Paper>
       </Box>
       <Box sx={{ width: { xs: '100%', md: 'calc(41.66% - 12px)' } }}>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom>Order Summary</Typography>
-          <Divider sx={{ my: 2 }} />
+          <Typography variant="h6" gutterBottom>Tóm tắt đơn hàng</Typography>
+          <Divider sx={{ my: 2, borderColor: colors.border }} />
           {cartItems.map((item) => (
             <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2">{item.product_details.name} (x{item.quantity})</Typography>
-              <Typography variant="body2">{(item.product_details.final_price ?? item.product_details.price).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+              <Typography variant="body2" sx={{ fontFamily: '"IBM Plex Mono", monospace' }}>{formatVnd(item.product_details.final_price ?? item.product_details.price)}</Typography>
             </Box>
           ))}
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2, borderColor: colors.border }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-            <Typography variant="h6">Total</Typography>
-            <Typography variant="h6">{calculateTotal().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Typography>
+            <Typography variant="h6">Tổng cộng</Typography>
+            <Typography variant="h6" sx={{ fontFamily: '"IBM Plex Mono", monospace', color: colors.camel }}>{formatVnd(calculateTotal())}</Typography>
           </Box>
           <Button
             variant="contained"
@@ -237,7 +240,7 @@ const CheckoutPage = () => {
             onClick={handlePlaceOrder}
             disabled={!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country}
           >
-            Place Order
+            Đặt hàng
           </Button>
         </Paper>
       </Box>

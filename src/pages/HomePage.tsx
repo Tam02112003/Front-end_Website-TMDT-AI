@@ -1,14 +1,66 @@
-import { Typography, Button, Container, Paper, Box, CircularProgress, Alert, Card, CardContent, CardMedia, CardActions, Chip, Snackbar } from '@mui/material';
+import { Typography, Button, Container, Paper, Box, CircularProgress, Alert, Card, CardContent, CardMedia, Chip, Snackbar } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import RecommendationService from '../services/RecommendationService';
 import ProductService from '../services/ProductService';
 import { useAuth } from '../context/AuthContext';
 import { Product } from '../models';
-import { TrendingUp, ShoppingBag, AutoAwesome } from '@mui/icons-material';
+import { TrendingUp, KeyboardAltOutlined, AutoFixHighOutlined } from '@mui/icons-material';
 import Countdown from '../components/Countdown';
+import { colors } from '../theme';
 
 import '../styles/responsive.css';
+
+const formatVnd = (amount: number) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+const ProductCard = ({ product }: { product: Product }) => (
+  <Card
+    sx={{
+      width: 260,
+      height: 400,
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      transition: 'border-color 0.15s ease',
+      '&:hover': { borderColor: colors.jade },
+    }}
+  >
+    <CardMedia
+      component="img"
+      sx={{ height: 200, objectFit: 'cover', bgcolor: '#0D0E10' }}
+      image={product.image_urls?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/d/df/Mechanical_keyboard_example.jpg'}
+      alt={product.name}
+    />
+    {product.release_date && new Date(product.release_date) > new Date() && (
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 200, bgcolor: 'rgba(22,24,28,0.85)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: colors.ink, textAlign: 'center' }}>
+        <Typography variant="body2" sx={{ fontFamily: '"IBM Plex Mono", monospace', mb: 1 }}>Sắp ra mắt</Typography>
+        <Countdown releaseDate={product.release_date} />
+      </Box>
+    )}
+    <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Typography variant="body1" sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1.5 }}>
+          {product.name}
+        </Typography>
+      </RouterLink>
+      {product.discount_percent && product.final_price !== undefined ? (
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
+          <Typography variant="body2" sx={{ color: colors.muted, textDecoration: 'line-through' }}>{formatVnd(product.price)}</Typography>
+          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.camel }}>{formatVnd(product.final_price)}</Typography>
+          <Chip label={`-${product.discount_percent}%`} size="small" sx={{ bgcolor: colors.danger, color: '#fff' }} />
+        </Box>
+      ) : (
+        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.camel }}>{formatVnd(product.price)}</Typography>
+      )}
+    </CardContent>
+  </Card>
+);
+
+const ProductRow = ({ products }: { products: Product[] }) => (
+  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+    {products.map((p) => <ProductCard key={p.id} product={p} />)}
+  </Box>
+);
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
@@ -21,13 +73,9 @@ const HomePage = () => {
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
 
   const handleCloseFeedback = (_event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setFeedback(null);
   };
-
-
 
   useEffect(() => {
     const fetchPersonalizedRecommendations = async () => {
@@ -40,13 +88,12 @@ const HomePage = () => {
         const response = await RecommendationService.getPersonalizedRecommendations();
         setPersonalizedRecommendations(response.data);
       } catch (err) {
-        setRecError('Failed to fetch personalized recommendations.');
+        setRecError('Không tải được gợi ý cá nhân hóa.');
         console.error(err);
       } finally {
         setRecLoading(false);
       }
     };
-
     fetchPersonalizedRecommendations();
   }, [isLoggedIn]);
 
@@ -56,16 +103,19 @@ const HomePage = () => {
         setFeaturedLoading(true);
         const response = await ProductService.getAllProducts();
         const now = new Date();
-        const filteredProducts = response.data.filter(product => {
+        const special = response.data.filter(product => {
           const isReleasing = product.release_date && new Date(product.release_date) > now;
           const isDiscountActive = product.discount_percent && product.discount_percent > 0 &&
                                    (!product.start_date || new Date(product.start_date) <= now) &&
                                    (!product.end_date || new Date(product.end_date) >= now);
           return isReleasing || isDiscountActive;
         });
-        setFeaturedProducts(filteredProducts.slice(0, 6));
+        // Fall back to the latest catalog items so the homepage is never empty
+        // when nothing is currently on sale or upcoming.
+        const toShow = special.length > 0 ? special : response.data;
+        setFeaturedProducts(toShow.slice(0, 8));
       } catch (err) {
-        setFeaturedError('Failed to fetch featured products.');
+        setFeaturedError('Không tải được danh sách sản phẩm.');
         console.error(err);
       } finally {
         setFeaturedLoading(false);
@@ -74,347 +124,128 @@ const HomePage = () => {
     fetchFeaturedProducts();
   }, []);
 
+  const heroImage = featuredProducts[0]?.image_urls?.[0]
+    || 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Keychron_K8_Non-Backlight_Wireless_Mechanical_Keyboard_with_Cherry_Profile_Double_-_Shot_PBT_Full_Set_Keycaps_-_Camel.jpg';
+
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }} className="responsive-container">
-      <>
-      {/* Hero Section */}
+      {/* Hero */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: 4,
-          color: 'white',
-          p: { xs: 3, sm: 4, md: 6, lg: 8 },
-          mb: 6,
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'url("https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1") center/cover',
-            opacity: 0.1,
-            zIndex: 0,
-          }
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          gap: { xs: 4, md: 8 },
+          mb: 8,
+          pt: { xs: 2, md: 4 },
         }}
       >
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ flex: 1 }}>
           <Typography
-            variant="h2"
             component="h1"
-            className="responsive-heading-1"
             sx={{
+              fontFamily: '"IBM Plex Mono", monospace',
               fontWeight: 700,
-              fontSize: { xs: '1.8rem', sm: '2.3rem', md: '2.8rem', lg: '3.3rem' },
-              mb: 2
+              fontSize: { xs: '2rem', sm: '2.6rem', md: '3.2rem' },
+              lineHeight: 1.1,
+              mb: 2,
             }}
           >
-            AI Virtual Try-On
+            Gõ đúng cảm giác.
           </Typography>
-          <Typography
-            variant="h5"
-            component="p"
-            className="responsive-heading-3"
-            sx={{
-              fontWeight: 300,
-              fontSize: { xs: '1.0rem', sm: '1.15rem', md: '1.4rem' },
-              opacity: 0.9,
-              mb: 3
-            }}
-          >
-            Experience the future of fashion shopping
+          <Typography variant="h6" component="p" sx={{ color: colors.muted, fontWeight: 400, mb: 3, maxWidth: 480 }}>
+            Bàn phím cơ, switch và keycap tuyển chọn cho dân văn phòng, game thủ và người mê gõ phím — từ linear êm nhẹ đến tactile rõ ràng.
           </Typography>
-          <Typography
-            variant="body1"
-            className="responsive-body"
-            paragraph
-            sx={{
-              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1.0rem' },
-              maxWidth: 600,
-              mx: 'auto',
-              mb: 4,
-              opacity: 0.8
-            }}
-          >
-            Discover and try on clothes from the comfort of your home. Upload your photo and see how our collection looks on you with cutting-edge AI technology.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Button
-size="large"
-              component={RouterLink}
-              to="/try-on"
-              startIcon={<AutoAwesome />}
-              className="touch-target"
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'white',
-                px: { xs: 2, sm: 3, md: 4 },
-                py: 1.5,
-                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.3)',
-                }
-              }}
-            >
-              Start Virtual Try-On
-            </Button>
-            <Button
-              variant="outlined"
               size="large"
+              variant="contained"
+              color="primary"
               component={RouterLink}
               to="/products"
-              startIcon={<ShoppingBag />}
+              startIcon={<KeyboardAltOutlined />}
               className="touch-target"
-              sx={{
-                borderColor: 'rgba(255,255,255,0.5)',
-                color: 'white',
-                px: { xs: 2, sm: 3, md: 4 },
-                py: 1.5,
-                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                '&:hover': {
-                  borderColor: 'white',
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                }
-              }}
             >
-              Browse Products
+              Xem sản phẩm
+            </Button>
+            <Button
+              size="large"
+              variant="outlined"
+              component={RouterLink}
+              to="/try-on"
+              startIcon={<AutoFixHighOutlined />}
+              className="touch-target"
+              sx={{ borderColor: colors.border, color: colors.ink, '&:hover': { borderColor: colors.jade } }}
+            >
+              Thử ghép AI
             </Button>
           </Box>
         </Box>
+
+        <Box
+          sx={{
+            flex: 1,
+            width: '100%',
+            position: 'relative',
+            borderRadius: 2,
+            overflow: 'hidden',
+            border: `1px solid ${colors.border}`,
+            boxShadow: `0 0 80px -20px ${colors.jade}55`,
+          }}
+        >
+          <Box
+            component="img"
+            src={heroImage}
+            alt="Bàn phím cơ nổi bật"
+            sx={{ width: '100%', height: { xs: 240, md: 360 }, objectFit: 'cover', display: 'block' }}
+          />
+        </Box>
       </Box>
 
-      {/* Personalized Recommendations Section */}
+      {/* Personalized Recommendations */}
       {isLoggedIn && (
-        <Box sx={{ mb: { xs: 4, md: 6 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <TrendingUp sx={{ mr: 2, color: 'primary.main' }} />
-            <Typography variant="h4" component="h2" className="responsive-heading-2" sx={{ fontWeight: 600 }}>
-              Your Personalized Recommendations
-            </Typography>
+        <Box sx={{ mb: 8 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+            <TrendingUp sx={{ color: colors.jade }} />
+            <Typography variant="h5" component="h2">Gợi ý dành cho bạn</Typography>
           </Box>
           {recLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-              <CircularProgress size={40} />
-            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={32} sx={{ color: colors.jade }} /></Box>
           ) : recError ? (
-            <Alert severity="error" sx={{ borderRadius: 2 }}>{recError}</Alert>
+            <Alert severity="error">{recError}</Alert>
           ) : personalizedRecommendations.length === 0 ? (
-            <Paper sx={{ p: { xs: 3, md: 4 }, textAlign: 'center', borderRadius: 2 }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No personalized recommendations yet
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                Explore some products to get started with AI-powered recommendations!
-              </Typography>
-              <Button variant="contained" color="primary" component={RouterLink} to="/products">
-                Explore Products
-              </Button>
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <Typography sx={{ color: colors.muted, mb: 2 }}>Chưa có gợi ý — khám phá thêm sản phẩm để AI hiểu gu của bạn hơn.</Typography>
+              <Button variant="outlined" component={RouterLink} to="/products" sx={{ borderColor: colors.border, color: colors.ink }}>Khám phá sản phẩm</Button>
             </Paper>
           ) : (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 3 } }} className="responsive-grid">
-              {personalizedRecommendations.map((product) => (
-                <Box key={product.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 4px)', md: 'calc(33.33% - 8px)', lg: 'calc(25% - 9px)', xl: 'calc(16.66% - 10px)' } }}>
-                  <Card
-                    sx={{
-                      width: 300, // Standardized width
-                      height: 400, // Standardized height
-                      display: 'flex',
-                      flexDirection: 'column',
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        transform: 'translateY(-12px)',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-                      }
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      sx={{ 
-                        height: 280, // Standardized height
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease',
-                        '&:hover': {
-                          transform: 'scale(1.05)'
-                        }
-                      }}
-                      image={product.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
-                      alt={product.name}
-                    />
-                    <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
-                          {product.name}
-                        </Typography>
-                      </RouterLink>
-                      {product.discount_percent && product.final_price !== undefined ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through', fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' } }}>
-                            {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                          </Typography>
-                          <Typography variant="h6" color="error.main" sx={{ fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
-                            {product.final_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                          </Typography>
-                          <Chip
-                            label={`${product.discount_percent}% OFF`}
-                            color="error"
-                            size="small"
-                            sx={{ fontSize: '0.75rem' }}
-                          />
-                        </Box>
-                      ) : (
-                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
-                          {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                        </Typography>
-                      )}
-                    </CardContent>
-                    <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0 }}>
-                      {/* Action buttons removed */}
-                    </CardActions>
-                  </Card>
-                </Box>
-              ))}
-                </Box>
+            <ProductRow products={personalizedRecommendations} />
           )}
         </Box>
       )}
 
-      {/* Featured Products Section */}
+      {/* Featured */}
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <ShoppingBag sx={{ mr: 2, color: 'primary.main' }} />
-          <Typography variant="h4" component="h2" className="responsive-heading-2" sx={{ fontWeight: 600, fontSize: { xs: '1.8rem', sm: '2rem', md: '2.2rem' } }}>
-            Featured Products
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+          <KeyboardAltOutlined sx={{ color: colors.jade }} />
+          <Typography variant="h5" component="h2">Sản phẩm nổi bật</Typography>
         </Box>
         {featuredLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-            <CircularProgress size={40} />
-          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={32} sx={{ color: colors.jade }} /></Box>
         ) : featuredError ? (
-          <Alert severity="error" sx={{ borderRadius: 2 }}>{featuredError}</Alert>
+          <Alert severity="error">{featuredError}</Alert>
         ) : featuredProducts.length === 0 ? (
-          <Paper sx={{ p: { xs: 3, md: 4 }, textAlign: 'center', borderRadius: 2 }}>
-            <Typography variant="h6" color="text.secondary">
-              No featured products available at the moment.
-            </Typography>
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography sx={{ color: colors.muted }}>Chưa có sản phẩm nào.</Typography>
           </Paper>
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 3 }, justifyContent: 'center' }} className="responsive-grid">
-            {featuredProducts.map((product) => (
-                <Box key={product.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 4px)', md: 'calc(33.33% - 8px)', lg: 'calc(25% - 9px)', xl: 'calc(16.66% - 10px)' } }}>
-                <Card
-                  sx={{
-                    width: 300, // Standardized width
-                    height: 450, // Standardized height
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    position: 'relative', // Added for correct absolute positioning of children
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-12px)',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-                    }
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    sx={{ 
-                      height: 280, // Standardized height
-                      objectFit: 'cover',
-                      transition: 'transform 0.3s ease',
-                      '&:hover': {
-                        transform: 'scale(1.05)'
-                      }
-                    }}
-                    image={product.image_urls?.[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'}
-                    alt={product.name}
-                  />
-                  {product.release_date && new Date(product.release_date) > new Date() && (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Faded background
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        color: 'white',
-                        textAlign: 'center',
-                        zIndex: 1,
-                      }}
-                    >
-                      <Typography variant="h6" gutterBottom>Coming Soon</Typography>
-                      <Countdown releaseDate={product.release_date} />
-                    </Box>
-                  )}
-                  <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                      <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
-                        {product.name}
-                      </Typography>
-                    </RouterLink>
-                    
-                    <Box sx={{ mt: 2 }}>
-                      {product.discount_percent && product.final_price !== undefined ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary" 
-                            sx={{ textDecoration: 'line-through', fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' } }}
-                          >
-                            {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                          </Typography>
-                          <Typography 
-                            variant="h6" 
-                            color="error.main" 
-                            sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }} 
-                          >
-                            {product.final_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <Typography 
-                          variant="h6" 
-                          color="primary.main" 
-                          sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }} 
-                        >
-                          {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                        </Typography>
-                      )}
-                    </Box>
-                  </CardContent>
-                  <CardActions sx={{ p: { xs: 2, md: 3 }, pt: 0 }}>
-                    {/* Action buttons removed */}
-                  </CardActions>
-                </Card>
-              </Box>
-            ))}
-                        </Box>        )}
+          <ProductRow products={featuredProducts} />
+        )}
       </Box>
-      </>
+
       {feedback && (
-        <Snackbar
-          open={feedback.open}
-          autoHideDuration={6000}
-          onClose={handleCloseFeedback}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert onClose={handleCloseFeedback} severity={feedback.severity} sx={{ width: '100%' }}>
-            {feedback.message}
-          </Alert>
+        <Snackbar open={feedback.open} autoHideDuration={6000} onClose={handleCloseFeedback} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+          <Alert onClose={handleCloseFeedback} severity={feedback.severity} sx={{ width: '100%' }}>{feedback.message}</Alert>
         </Snackbar>
       )}
     </Container>

@@ -2,7 +2,8 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Typography, Box, TextField, Button, CircularProgress, Alert, Link, Paper, Container } from '@mui/material';
 import AuthService from '../services/AuthService';
-import { AutoAwesome, PersonAdd } from '@mui/icons-material';
+import { KeyboardAltOutlined, PersonAddOutlined } from '@mui/icons-material';
+import { colors } from '../theme';
 import '../styles/responsive.css';
 
 const RegisterPage = () => {
@@ -23,15 +24,13 @@ const RegisterPage = () => {
 
     try {
       await AuthService.register({ username, full_name: fullName, email, password });
-      setSuccess('Registration successful! You will be redirected to login.');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setSuccess('Đăng ký thành công! Đang chuyển tới trang đăng nhập...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
       if (err.response && err.response.data && err.response.data.detail) {
         setError(err.response.data.detail);
       } else {
-        setError('Registration failed. Please try again.');
+        setError('Đăng ký thất bại. Vui lòng thử lại.');
       }
       console.error(err);
     } finally {
@@ -41,170 +40,45 @@ const RegisterPage = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 4, md: 8 } }} className="responsive-container">
-      <Paper 
-        elevation={0}
-        sx={{ 
-          p: { xs: 3, sm: 4, md: 6 },
-          borderRadius: 4,
-          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-          border: '1px solid rgba(102, 126, 234, 0.2)'
-        }}
-      >
+      <Paper sx={{ p: { xs: 3, sm: 4, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 4 } }}>
-          <AutoAwesome 
-            sx={{ 
-              fontSize: { xs: 40, md: 48 }, 
-              color: 'primary.main',
-              mb: 2
-            }} 
-          />
-          <Typography 
-            component="h1" 
-            className="responsive-heading-1"
-            sx={{ 
-              fontWeight: 700,
-              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
-              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 1
-            }}
-          >
-            Join AI Try-On
+          <KeyboardAltOutlined sx={{ fontSize: { xs: 36, md: 44 }, color: colors.jade, mb: 2 }} />
+          <Typography component="h1" variant="h4" className="responsive-heading-1" sx={{ mb: 1 }}>
+            Tạo tài khoản
           </Typography>
-          <Typography variant="body1" className="responsive-body" color="text.secondary">
-            Create your account and start your fashion journey
+          <Typography className="responsive-body" sx={{ color: colors.muted }}>
+            Tham gia TamStore để lưu giỏ hàng và theo dõi đơn hàng
           </Typography>
         </Box>
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            autoFocus
-            className="touch-target"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            sx={{
-              mb: 2,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              }
-            }}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="fullName"
-            label="Full Name"
-            name="fullName"
-            autoComplete="name"
-            className="touch-target"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            sx={{
-              mb: 2,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              }
-            }}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            value={email}
-            className="touch-target"
-            onChange={(e) => setEmail(e.target.value)}
-            sx={{
-              mb: 2,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              }
-            }}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="new-password"
-            className="touch-target"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            sx={{
-              mb: 3,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              }
-            }}
-          />
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-              {error}
-            </Alert>
-          )}
-          
-          {success && (
-            <Alert severity="success" sx={{ mb: 3, borderRadius: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-              {success}
-            </Alert>
-          )}
-          
+          <TextField margin="normal" required fullWidth id="username" label="Tên đăng nhập" name="username" autoComplete="username" autoFocus className="touch-target" value={username} onChange={(e) => setUsername(e.target.value)} sx={{ mb: 2 }} />
+          <TextField margin="normal" required fullWidth id="fullName" label="Họ và tên" name="fullName" autoComplete="name" className="touch-target" value={fullName} onChange={(e) => setFullName(e.target.value)} sx={{ mb: 2 }} />
+          <TextField margin="normal" required fullWidth id="email" label="Email" name="email" autoComplete="email" value={email} className="touch-target" onChange={(e) => setEmail(e.target.value)} sx={{ mb: 2 }} />
+          <TextField margin="normal" required fullWidth name="password" label="Mật khẩu" type="password" id="password" autoComplete="new-password" className="touch-target" value={password} onChange={(e) => setPassword(e.target.value)} sx={{ mb: 3 }} />
+
+          {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
+
           <Button
             type="submit"
             fullWidth
             variant="contained"
+            color="primary"
             size="large"
             disabled={loading}
             className="touch-target"
-            startIcon={loading ? <CircularProgress size={20} /> : <PersonAdd />}
-            sx={{ 
-              mb: 3,
-              py: 1.5,
-              borderRadius: 2,
-              textTransform: 'none',
-              fontSize: { xs: '1rem', md: '1.1rem' },
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-              }
-            }}
+            startIcon={loading ? <CircularProgress size={20} sx={{ color: '#0D1210' }} /> : <PersonAddOutlined />}
+            sx={{ mb: 3, py: 1.5 }}
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
           </Button>
-          
+
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" className="responsive-body" color="text.secondary">
-              Already have an account?{' '}
-              <Link 
-                component={RouterLink} 
-                to="/login" 
-                sx={{ 
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  '&:hover': {
-                    textDecoration: 'underline'
-                  }
-                }}
-              >
-                Sign In
+            <Typography variant="body2" sx={{ color: colors.muted }}>
+              Đã có tài khoản?{' '}
+              <Link component={RouterLink} to="/login" sx={{ color: colors.jadeBright, fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                Đăng nhập
               </Link>
             </Typography>
           </Box>
