@@ -14,6 +14,16 @@ interface Message {
   content: string;
 }
 
+const FAB_SIZE = 56;
+const EDGE_MARGIN = 16;
+const DRAG_THRESHOLD_PX = 4;
+const FAB_POSITION_STORAGE_KEY = 'chatbotFabPosition';
+
+const clampBottom = (bottom: number) => {
+  const maxBottom = Math.max(window.innerHeight - FAB_SIZE - EDGE_MARGIN, EDGE_MARGIN);
+  return Math.min(Math.max(bottom, EDGE_MARGIN), maxBottom);
+};
+
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -21,6 +31,66 @@ const Chatbot = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Draggable launcher button position, snapped to the nearest left/right edge
+  // on release (like iOS AssistiveTouch), remembered per-browser via localStorage.
+  const [fabSide, setFabSide] = useState<'left' | 'right'>('right');
+  const [fabBottom, setFabBottom] = useState<number>(24);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; startBottom: number; currentBottom: number; moved: boolean } | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(FAB_POSITION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.side === 'left' || parsed.side === 'right') setFabSide(parsed.side);
+        if (typeof parsed.bottom === 'number') setFabBottom(clampBottom(parsed.bottom));
+      }
+    } catch {
+      // localStorage unavailable (private mode, etc.) - just use the default position
+    }
+  }, []);
+
+  const handleFabPointerDown = (e: React.PointerEvent<HTMLElement>) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, startBottom: fabBottom, currentBottom: fabBottom, moved: false };
+  };
+
+  const handleFabPointerMove = (e: React.PointerEvent<HTMLElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    if (!drag.moved && (Math.abs(dx) > DRAG_THRESHOLD_PX || Math.abs(dy) > DRAG_THRESHOLD_PX)) {
+      drag.moved = true;
+      setIsDragging(true);
+    }
+    if (drag.moved) {
+      drag.currentBottom = clampBottom(drag.startBottom - dy);
+      setFabBottom(drag.currentBottom);
+    }
+  };
+
+  const handleFabPointerUp = (e: React.PointerEvent<HTMLElement>) => {
+    const drag = dragRef.current;
+    dragRef.current = null;
+    setIsDragging(false);
+    if (!drag) return;
+
+    if (!drag.moved) {
+      toggleChatbot();
+      return;
+    }
+
+    const newSide: 'left' | 'right' = e.clientX < window.innerWidth / 2 ? 'left' : 'right';
+    setFabSide(newSide);
+    try {
+      localStorage.setItem(FAB_POSITION_STORAGE_KEY, JSON.stringify({ side: newSide, bottom: drag.currentBottom }));
+    } catch {
+      // ignore - position just won't persist across reloads
+    }
+  };
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem('chatbotSessionId');
@@ -99,19 +169,31 @@ const Chatbot = () => {
     setIsOpen(!isOpen);
   };
 
+  const panelBottom = fabBottom + FAB_SIZE + 12;
+  const panelMaxHeight = `calc(100vh - ${panelBottom}px - ${EDGE_MARGIN}px)`;
+
   return (
-    <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
-      {isOpen ? (
+    <>
+      {isOpen && (
         <Paper
           elevation={8}
           sx={{
+            position: 'fixed',
+            [fabSide]: EDGE_MARGIN,
+            bottom: panelBottom,
+            zIndex: 1000,
             width: 350,
             height: 500,
+            minWidth: 280,
+            minHeight: 320,
+            maxWidth: 'calc(100vw - 32px)',
+            maxHeight: panelMaxHeight,
             display: 'flex',
             flexDirection: 'column',
             borderRadius: '12px',
             overflow: 'hidden',
             border: `1px solid ${colors.border}`,
+            resize: 'both',
           }}
         >
           <Box sx={{ p: 2, bgcolor: colors.jade, color: '#0D1210', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -173,12 +255,31 @@ const Chatbot = () => {
             </IconButton>
           </Box>
         </Paper>
-      ) : (
-        <Fab color="primary" aria-label="chat" onClick={toggleChatbot}>
-          <ChatIcon />
-        </Fab>
       )}
-    </Box>
+      {!isOpen && (
+        <Box
+          sx={{
+            position: 'fixed',
+            [fabSide]: EDGE_MARGIN,
+            bottom: fabBottom,
+            zIndex: 1000,
+            touchAction: 'none',
+            userSelect: 'none',
+          }}
+          onPointerDown={handleFabPointerDown}
+          onPointerMove={handleFabPointerMove}
+          onPointerUp={handleFabPointerUp}
+        >
+          <Fab
+            color="primary"
+            aria-label="chat"
+            sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
+            <ChatIcon />
+          </Fab>
+        </Box>
+      )}
+    </>
   );
 };
 
