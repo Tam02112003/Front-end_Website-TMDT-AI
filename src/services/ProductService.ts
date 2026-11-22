@@ -25,14 +25,34 @@ const deleteProduct = (productId: number) => {
   return api.delete(`/admin/products/${productId}`);
 };
 
+interface CsvUploadJob {
+  job_id: string;
+  status: 'processing';
+}
+
+interface CsvUploadJobStatus {
+  status: 'processing' | 'completed' | 'failed';
+  result: {
+    message?: string;
+    detail?: string;
+    successful_imports?: number;
+    raw_failed_imports?: number;
+    llm_failed_imports?: number;
+  } | null;
+}
+
 const uploadProductsCsv = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
-  return api.post('/products/upload', formData, {
+  return api.post<CsvUploadJob>('/products/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
+};
+
+const getCsvUploadJobStatus = (jobId: string) => {
+  return api.get<CsvUploadJobStatus>(`/products/upload/status/${jobId}`);
 };
 
 const getProductRecommendations = (productId: number) => {
@@ -90,6 +110,7 @@ const ProductService = {
   updateProduct,
   deleteProduct,
   uploadProductsCsv,
+  getCsvUploadJobStatus,
   getProductRecommendations,
   readProductComments,
   createCommentForProduct,

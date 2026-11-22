@@ -180,6 +180,36 @@ const AdminProductPage = () => {
       }
     };
   
+    const pollCsvJobStatus = async (jobId: string) => {
+      const POLL_INTERVAL_MS = 2000;
+      const MAX_POLLS = 60; // ~2 minutes before giving up
+
+      for (let i = 0; i < MAX_POLLS; i++) {
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+        try {
+          const { data: job } = await ProductService.getCsvUploadJobStatus(jobId);
+          if (job.status === 'completed') {
+            const r = job.result;
+            setUploadMessage(`Tải lên thành công: Đã nhập ${r?.successful_imports ?? 0} sản phẩm (${(r?.raw_failed_imports ?? 0) + (r?.llm_failed_imports ?? 0)} dòng lỗi).`);
+            setSelectedFile(null);
+            setOpenCsvDialog(false);
+            fetchProducts();
+            return;
+          }
+          if (job.status === 'failed') {
+            setUploadMessage(`Tải lên thất bại: ${job.result?.detail || 'Đã có lỗi xảy ra.'}`);
+            return;
+          }
+          // still processing, keep polling
+        } catch (err) {
+          console.error('Failed to poll CSV job status:', err);
+          setUploadMessage('Không thể kiểm tra trạng thái xử lý CSV.');
+          return;
+        }
+      }
+      setUploadMessage('Quá trình xử lý CSV đang mất nhiều thời gian hơn dự kiến. Vui lòng kiểm tra lại danh sách sản phẩm sau ít phút.');
+    };
+
     const handleUploadCsv = async () => {
       if (!selectedFile) {
         setUploadMessage('Vui lòng chọn file CSV để tải lên.');
@@ -190,10 +220,8 @@ const AdminProductPage = () => {
       setUploadMessage(null);
       try {
         const response = await ProductService.uploadProductsCsv(selectedFile);
-        setUploadMessage(`Tải lên thành công: ${response.data.message || 'Đã nhập sản phẩm thành công.'}`);
-        setOpenCsvDialog(false);
-        setSelectedFile(null);
-        fetchProducts(); // Refresh product list
+        setUploadMessage('Đang xử lý CSV, vui lòng đợi...');
+        await pollCsvJobStatus(response.data.job_id);
       } catch (err: any) {
         setUploadMessage(`Tải lên thất bại: ${err.response?.data?.detail || err.message}`);
         console.error(err);
@@ -406,7 +434,7 @@ const AdminProductPage = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={openCsvDialog} onClose={() => setOpenCsvDialog(false)}>
+        <Dialog open={openCsvDialog} onClose={() => !uploading && setOpenCsvDialog(false)}>
           <DialogTitle>Nhập sản phẩm từ CSV</DialogTitle>
           <DialogContent>
             <input
@@ -415,10 +443,18 @@ const AdminProductPage = () => {
               onChange={handleFileChange}
               style={{ display: 'block', marginBottom: '16px' }}
             />
-            {uploadMessage && <Alert severity={uploadMessage.startsWith('Tải lên thành công') ? 'success' : 'error'}>{uploadMessage}</Alert>}
+            {uploadMessage && (
+              <Alert severity={
+                uploadMessage.startsWith('Tải lên thành công') ? 'success'
+                  : uploadMessage.startsWith('Đang xử lý') ? 'info'
+                  : 'error'
+              }>
+                {uploadMessage}
+              </Alert>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenCsvDialog(false)}>Hủy</Button>
+            <Button onClick={() => setOpenCsvDialog(false)} disabled={uploading}>Hủy</Button>
             <Button onClick={handleUploadCsv} disabled={uploading || !selectedFile} color="primary">
               {uploading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Tải lên'}
             </Button>
