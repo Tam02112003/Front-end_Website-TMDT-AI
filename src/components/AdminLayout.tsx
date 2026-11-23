@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItemText, ListItemIcon, CircularProgress, Snackbar, Alert, ListItemButton } from '@mui/material';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined, TrendingUpOutlined } from '@mui/icons-material';
+import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined, TrendingUpOutlined, CloudUploadOutlined } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import AdminService from '../services/AdminService';
 import { colors } from '../theme';
@@ -26,6 +26,7 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [clearingCache, setClearingCache] = useState(false);
+  const [backingUp, setBackingUp] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
 
   const handleLogout = () => {
@@ -42,6 +43,18 @@ const AdminLayout = () => {
       setSnackbar({ open: true, message: 'Xóa Redis cache thất bại.', severity: 'error' });
     }
     setClearingCache(false);
+  };
+
+  const handleBackup = async () => {
+    setBackingUp(true);
+    try {
+      const { data } = await AdminService.createBackup();
+      setSnackbar({ open: true, message: `Đã sao lưu xong: ${data.file_name}`, severity: 'success' });
+      window.open(data.drive_link, '_blank', 'noopener,noreferrer');
+    } catch (error: any) {
+      setSnackbar({ open: true, message: error.response?.data?.detail || 'Sao lưu thất bại.', severity: 'error' });
+    }
+    setBackingUp(false);
   };
 
   useEffect(() => {
@@ -114,6 +127,12 @@ const AdminLayout = () => {
                 </ListItemButton>
               );
             })}
+            <ListItemButton onClick={handleBackup} disabled={backingUp} sx={{ borderRadius: 1, mt: 1, color: colors.jade, '&:hover': { bgcolor: 'rgba(63,163,140,0.08)' } }}>
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
+                {backingUp ? <CircularProgress size={20} sx={{ color: colors.jade }} /> : <CloudUploadOutlined fontSize="small" />}
+              </ListItemIcon>
+              <ListItemText primary="Sao lưu ngay" primaryTypographyProps={{ fontSize: '0.9rem' }} />
+            </ListItemButton>
             <ListItemButton onClick={handleClearCache} disabled={clearingCache} sx={{ borderRadius: 1, mt: 1, color: colors.danger, '&:hover': { bgcolor: 'rgba(226,105,91,0.08)' } }}>
               <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
                 {clearingCache ? <CircularProgress size={20} sx={{ color: colors.danger }} /> : <DeleteSweepOutlined fontSize="small" />}
