@@ -8,6 +8,7 @@ import { Product } from '../models';
 import { TrendingUp, KeyboardAltOutlined, AutoFixHighOutlined } from '@mui/icons-material';
 import Countdown from '../components/Countdown';
 import ReviewStars from '../components/ReviewStars';
+import WishlistButton from '../components/WishlistButton';
 import { colors } from '../theme';
 
 import '../styles/responsive.css';
@@ -32,6 +33,9 @@ const ProductCard = ({ product }: { product: Product }) => (
       image={product.image_urls?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/d/df/Mechanical_keyboard_example.jpg'}
       alt={product.name}
     />
+    <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 1 }}>
+      <WishlistButton productId={product.id} size="small" />
+    </Box>
     {product.release_date && new Date(product.release_date) > new Date() && (
       <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 200, bgcolor: 'rgba(22,24,28,0.85)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: colors.ink, textAlign: 'center' }}>
         <Typography variant="body2" sx={{ fontFamily: '"IBM Plex Mono", monospace', mb: 1 }}>Sắp ra mắt</Typography>

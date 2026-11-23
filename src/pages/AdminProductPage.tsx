@@ -465,6 +465,48 @@ const AdminProductPage = () => {
                     ))}
                   </Select>
                 </FormControl>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Loại switch</InputLabel>
+                  <Select
+                    name="switch_type"
+                    value={currentProduct.switch_type || ''}
+                    onChange={handleSelectChange}
+                  >
+                    <MenuItem value=""><em>Không rõ</em></MenuItem>
+                    <MenuItem value="linear">Linear</MenuItem>
+                    <MenuItem value="tactile">Tactile</MenuItem>
+                    <MenuItem value="clicky">Clicky</MenuItem>
+                    <MenuItem value="magnetic">Magnetic (Hall Effect)</MenuItem>
+                    <MenuItem value="optical">Optical</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Layout</InputLabel>
+                  <Select
+                    name="layout"
+                    value={currentProduct.layout || ''}
+                    onChange={handleSelectChange}
+                  >
+                    <MenuItem value=""><em>Không rõ</em></MenuItem>
+                    <MenuItem value="full">Full-size</MenuItem>
+                    <MenuItem value="tkl">TKL (87-96%)</MenuItem>
+                    <MenuItem value="75">75%</MenuItem>
+                    <MenuItem value="65">65%</MenuItem>
+                    <MenuItem value="60">60%</MenuItem>
+                    <MenuItem value="40">40%</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={!!currentProduct.hot_swappable}
+                      onChange={handleSwitchChange}
+                      name="hot_swappable"
+                      color="primary"
+                    />
+                  }
+                  label="Hỗ trợ hot-swap"
+                />
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DateTimePicker
                     label="Ngày ra mắt"

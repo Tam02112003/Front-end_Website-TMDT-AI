@@ -50,6 +50,9 @@ export interface Product {
   quantity?: number;
   avg_rating?: number;
   review_count?: number;
+  switch_type?: string;
+  layout?: string;
+  hot_swappable?: boolean;
 }
 
 export interface OrderItem {

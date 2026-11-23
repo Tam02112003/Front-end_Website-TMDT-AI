@@ -9,8 +9,18 @@ const createProduct = (productData: ProductCreate) => {
   return api.post<Product>('/admin/products', productData);
 };
 
-const getAllProducts = (searchQuery?: string, category_id?: number, brand_id?: number, min_price?: number, max_price?: number) => {
-  return api.get<Product[]>('/products', { params: { search: searchQuery, category_id, brand_id, min_price, max_price } });
+interface ProductListFilters {
+  category_id?: number;
+  brand_id?: number;
+  min_price?: number;
+  max_price?: number;
+  switch_type?: string;
+  layout?: string;
+  hot_swappable?: boolean;
+}
+
+const getAllProducts = (searchQuery?: string, filters: ProductListFilters = {}) => {
+  return api.get<Product[]>('/products', { params: { search: searchQuery, ...filters } });
 };
 
 const getProductById = (productId: number) => {

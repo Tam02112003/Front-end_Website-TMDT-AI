@@ -8,7 +8,8 @@ import BrandService from '../services/BrandService';
 import CategoryService from '../services/CategoryService';
 import { useAuth } from '../context/AuthContext';
 import Countdown from '../components/Countdown';
-import ProductFilter from '../components/ProductFilter';
+import ProductFilter, { ProductFilters } from '../components/ProductFilter';
+import WishlistButton from '../components/WishlistButton';
 import ReviewStars from '../components/ReviewStars';
 import { Search, ShoppingCartOutlined, AutoFixHighOutlined } from '@mui/icons-material';
 import { colors } from '../theme';
@@ -24,7 +25,7 @@ const ProductsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [useAiSearch, setUseAiSearch] = useState<boolean>(false);
-  const [filters, setFilters] = useState<{ brand_id?: number; category_id?: number; min_price?: number; max_price?: number; }>({});
+  const [filters, setFilters] = useState<ProductFilters>({});
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [feedback, setFeedback] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
@@ -51,7 +52,7 @@ const ProductsPage = () => {
         setLoading(true);
         const response = useAiSearch && searchQuery.trim()
           ? await ProductService.semanticSearchProducts(searchQuery.trim())
-          : await ProductService.getAllProducts(searchQuery, filters.category_id, filters.brand_id, filters.min_price, filters.max_price);
+          : await ProductService.getAllProducts(searchQuery, filters);
         setProducts(response.data);
         setError(null);
       } catch (err) {
@@ -69,7 +70,7 @@ const ProductsPage = () => {
     return () => clearTimeout(handler);
   }, [searchQuery, filters, useAiSearch]);
 
-  const handleFilterChange = (newFilters: { brand_id?: number; category_id?: number; min_price?: number; max_price?: number; }) => {
+  const handleFilterChange = (newFilters: ProductFilters) => {
     setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
   };
 
@@ -179,6 +180,9 @@ const ProductsPage = () => {
                   {isDiscountActive(product) && (
                     <Chip label={`-${product.discount_percent}%`} sx={{ position: 'absolute', top: 10, right: 10, bgcolor: colors.danger, color: '#fff', fontWeight: 700 }} />
                   )}
+                  <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
+                    <WishlistButton productId={product.id} size="small" />
+                  </Box>
                 </Box>
 
                 <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Avatar, Menu, MenuItem, IconButton, Badge, Divider } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCartOutlined, KeyboardAltOutlined, ArticleOutlined, PersonOutline, LogoutOutlined, MenuOutlined } from '@mui/icons-material';
+import { ShoppingCartOutlined, KeyboardAltOutlined, ArticleOutlined, PersonOutline, LogoutOutlined, MenuOutlined, FavoriteBorderOutlined } from '@mui/icons-material';
 import { useState } from 'react';
 import '../styles/responsive.css';
 import Chatbot from './Chatbot';
@@ -91,6 +91,12 @@ const Layout = () => {
                 Tin tức
               </Button>
 
+              <IconButton component={Link} to="/wishlist" className="touch-target" sx={{ mx: 0.5, display: { xs: 'none', sm: 'flex' }, color: colors.ink }}>
+                <Badge color="secondary">
+                  <FavoriteBorderOutlined />
+                </Badge>
+              </IconButton>
+
               <IconButton component={Link} to="/cart" className="touch-target" sx={{ mx: 1, display: { xs: 'none', sm: 'flex' }, color: colors.ink }}>
                 <Badge color="secondary">
                   <ShoppingCartOutlined />
@@ -135,6 +141,9 @@ const Layout = () => {
               </Button>
               <Button component={Link} to="/news" fullWidth startIcon={<ArticleOutlined />} onClick={() => setMobileMenuOpen(false)} sx={{ ...navLinkSx, justifyContent: 'flex-start', py: 1.5, mb: 1 }}>
                 Tin tức
+              </Button>
+              <Button component={Link} to="/wishlist" fullWidth startIcon={<FavoriteBorderOutlined />} onClick={() => setMobileMenuOpen(false)} sx={{ ...navLinkSx, justifyContent: 'flex-start', py: 1.5, mb: 1 }}>
+                Yêu thích
               </Button>
             </Box>
           </Container>

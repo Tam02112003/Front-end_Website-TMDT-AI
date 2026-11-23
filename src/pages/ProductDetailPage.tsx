@@ -12,6 +12,7 @@ import CartService from '../services/CartService';
 import ProductService from '../services/ProductService'; // Import ProductService
 import ProductRecommendation from '../components/ProductRecommendation';
 import Countdown from '../components/Countdown';
+import WishlistButton from '../components/WishlistButton';
 import { Product } from '../models'; // Import Product from models.ts
 import { Comment, CommentCreate, CartItem, Review } from '../types'; // Import Comment and CommentCreate
 import { AutoFixHighOutlined } from '@mui/icons-material';
@@ -464,6 +465,7 @@ const ProductDetailPage = () => {
                 >
                   {addLoading ? <CircularProgress size={22} sx={{ color: '#0D1210' }} /> : 'Thêm giỏ hàng'}
                 </Button>
+                <WishlistButton productId={product.id} />
               </Box>
               <Button
                 variant="outlined"

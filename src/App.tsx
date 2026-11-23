@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import TryOnPage from './pages/TryOnPage';
 import CartPage from './pages/CartPage';
+import WishlistPage from './pages/WishlistPage';
 import LoginPage from './pages/LoginPage';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import theme from './theme';
@@ -41,6 +42,7 @@ function App() {
           <Route path="products/:productId" element={<ProductDetailPage />} />
           <Route path="try-on" element={<TryOnPage />} />
           <Route path="cart" element={<CartPage />} />
+          <Route path="wishlist" element={<WishlistPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
