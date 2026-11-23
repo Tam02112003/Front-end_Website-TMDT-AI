@@ -5,5 +5,9 @@ services:
     buildCommand: "npm install && npm run build"
     staticPublishPath: dist
     rewrites:
+      - source: /sitemap.xml
+        destination: https://app-xi-seven-71.vercel.app/sitemap.xml
+      - source: /robots.txt
+        destination: https://app-xi-seven-71.vercel.app/robots.txt
       - source: /*
         destination: /index.html

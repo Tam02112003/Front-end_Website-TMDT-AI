@@ -156,8 +156,48 @@ const Layout = () => {
 
       <Chatbot />
 
-      <Box component="footer" sx={{ py: 4, px: 2, mt: 'auto', borderTop: `1px solid ${colors.border}`, bgcolor: colors.surface }}>
+      <Box component="footer" sx={{ py: 5, px: 2, mt: 'auto', borderTop: `1px solid ${colors.border}`, bgcolor: colors.surface }}>
         <Container maxWidth="xl" className="responsive-container">
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 4, md: 6 }, mb: 4 }}>
+            <Box sx={{ flex: '1 1 220px', minWidth: 200 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <KeyboardAltOutlined sx={{ color: colors.jade }} />
+                <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, color: colors.ink }}>
+                  TamStore
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: colors.muted, maxWidth: 280 }}>
+                Bàn phím cơ, switch và keycap tuyển chọn cho dân văn phòng, game thủ và người mê gõ phím.
+              </Typography>
+            </Box>
+
+            <Box sx={{ flex: '1 1 160px', minWidth: 140 }}>
+              <Typography variant="subtitle2" sx={{ color: colors.ink, fontWeight: 600, mb: 1.5 }}>
+                Mua sắm
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to="/products" style={{ color: colors.muted, textDecoration: 'none' }}>Sản phẩm</Link>
+                <Link to="/news" style={{ color: colors.muted, textDecoration: 'none' }}>Tin tức</Link>
+                <Link to="/try-on" style={{ color: colors.muted, textDecoration: 'none' }}>Thử ghép AI</Link>
+                <Link to="/wishlist" style={{ color: colors.muted, textDecoration: 'none' }}>Yêu thích</Link>
+              </Box>
+            </Box>
+
+            <Box sx={{ flex: '1 1 160px', minWidth: 140 }}>
+              <Typography variant="subtitle2" sx={{ color: colors.ink, fontWeight: 600, mb: 1.5 }}>
+                Tài khoản
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to="/cart" style={{ color: colors.muted, textDecoration: 'none' }}>Giỏ hàng</Link>
+                <Link to="/orders" style={{ color: colors.muted, textDecoration: 'none' }}>Đơn hàng</Link>
+                <Link to="/login" style={{ color: colors.muted, textDecoration: 'none' }}>Đăng nhập</Link>
+                <Link to="/register" style={{ color: colors.muted, textDecoration: 'none' }}>Đăng ký</Link>
+              </Box>
+            </Box>
+          </Box>
+
+          <Divider sx={{ borderColor: colors.border, mb: 2 }} />
+
           <Typography variant="body2" align="center" sx={{ color: colors.muted }}>
             {'© '}
             <Link to="/" style={{ color: colors.muted, textDecoration: 'none' }}>TamStore</Link>{' '}
