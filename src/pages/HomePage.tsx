@@ -43,7 +43,7 @@ const ProductCard = ({ product }: { product: Product }) => (
       </Box>
     )}
     <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-      <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <RouterLink to={`/products/${product.slug || product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <Typography variant="body1" sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1 }}>
           {product.name}
         </Typography>

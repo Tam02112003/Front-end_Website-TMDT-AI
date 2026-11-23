@@ -169,7 +169,7 @@ const ProductsPage = () => {
             <Box key={product.id} sx={{ width: 280 }}>
               <Card sx={{ width: 280, height: 480, display: 'flex', flexDirection: 'column', transition: 'border-color 0.15s ease', '&:hover': { borderColor: colors.jade } }}>
                 <Box sx={{ position: 'relative' }}>
-                  <Link to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
+                  <Link to={`/products/${product.slug || product.id}`} style={{ textDecoration: 'none' }}>
                     <CardMedia
                       component="img"
                       sx={{ height: 220, objectFit: 'cover', bgcolor: '#0D0E10' }}
@@ -186,7 +186,7 @@ const ProductsPage = () => {
                 </Box>
 
                 <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Link to={`/products/${product.slug || product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Typography variant="body1" sx={{ fontWeight: 600, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1 }}>
                       {product.name}
                     </Typography>

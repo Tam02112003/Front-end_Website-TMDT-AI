@@ -101,7 +101,7 @@ const ProductRecommendation = ({ productId }: ProductRecommendationProps) => {
                 )}
               </CardContent>
               <CardActions>
-                <Button size="small" component={Link} to={`/products/${product.id}`}>
+                <Button size="small" component={Link} to={`/products/${product.slug || product.id}`}>
                   View Details
                 </Button>
               </CardActions>

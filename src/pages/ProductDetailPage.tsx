@@ -24,8 +24,11 @@ const formatVnd = (amount: number) => amount.toLocaleString('vi-VN', { style: 'c
 const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  // The route param can be either a slug or a numeric id; once the product
+  // loads, its real numeric `id` is what every sub-resource API call needs.
   const { isLoggedIn, user } = useAuth(); // Get user from useAuth
   const [product, setProduct] = useState<Product | null>(null);
+  const numericProductId = product?.id;
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -126,10 +129,10 @@ const ProductDetailPage = () => {
   // Fetch comments effect
   useEffect(() => {
     const fetchComments = async () => {
-      if (!productId) return;
+      if (!numericProductId) return;
       try {
         setCommentLoading(true);
-        const response = await ProductService.readProductComments(parseInt(productId));
+        const response = await ProductService.readProductComments(numericProductId);
         setComments(response.data);
       } catch (err) {
         setCommentError('Failed to fetch comments.');
@@ -140,14 +143,14 @@ const ProductDetailPage = () => {
     };
 
     fetchComments();
-  }, [productId]);
+  }, [numericProductId]);
 
   // Fetch reviews effect
   const fetchReviews = async () => {
-    if (!productId) return;
+    if (!numericProductId) return;
     try {
       setReviewLoading(true);
-      const response = await ProductService.readProductReviews(parseInt(productId));
+      const response = await ProductService.readProductReviews(numericProductId);
       setReviews(response.data);
     } catch (err) {
       setReviewError('Không tải được đánh giá.');
@@ -159,7 +162,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     fetchReviews();
-  }, [productId]);
+  }, [numericProductId]);
 
   const myReview = reviews.find((r) => user && r.user_id === user.id);
 
@@ -174,14 +177,14 @@ const ProductDetailPage = () => {
   };
 
   const handleSubmitReview = async () => {
-    if (!productId) return;
+    if (!numericProductId) return;
     setReviewSubmitting(true);
     try {
       if (editingReview) {
-        await ProductService.updateProductReview(parseInt(productId), editingReview.id, reviewForm);
+        await ProductService.updateProductReview(numericProductId, editingReview.id, reviewForm);
         setFeedback({ open: true, message: 'Cập nhật đánh giá thành công!', severity: 'success' });
       } else {
-        await ProductService.createReviewForProduct(parseInt(productId), reviewForm);
+        await ProductService.createReviewForProduct(numericProductId, reviewForm);
         setFeedback({ open: true, message: 'Gửi đánh giá thành công!', severity: 'success' });
       }
       handleCancelReviewForm();
@@ -195,9 +198,9 @@ const ProductDetailPage = () => {
   };
 
   const handleDeleteReview = async (reviewId: number) => {
-    if (!productId) return;
+    if (!numericProductId) return;
     try {
-      await ProductService.deleteProductReview(parseInt(productId), reviewId);
+      await ProductService.deleteProductReview(numericProductId, reviewId);
       setFeedback({ open: true, message: 'Đã xóa đánh giá.', severity: 'success' });
       await fetchReviews();
     } catch (err) {
@@ -230,19 +233,19 @@ const ProductDetailPage = () => {
   const handlePostComment = async (parentId: number | null = null) => {
     const contentToPost = parentId ? replyContent : newCommentContent;
 
-    if (!productId || !user || !contentToPost.trim()) {
+    if (!numericProductId || !user || !contentToPost.trim()) {
       return;
     }
 
     setCommentLoading(true);
     try {
       const commentData: CommentCreate = {
-        product_id: parseInt(productId),
+        product_id: numericProductId,
         content: contentToPost.trim(),
         user_name: user.username, // Use username from auth context
         parent_comment_id: parentId ?? undefined, // Include parent_comment_id if it's a reply
       };
-      await ProductService.createCommentForProduct(parseInt(productId), commentData);
+      await ProductService.createCommentForProduct(numericProductId, commentData);
       if (parentId) {
         setReplyContent(''); // Clear reply input
         setReplyingToCommentId(null); // Close reply input
@@ -250,7 +253,7 @@ const ProductDetailPage = () => {
         setNewCommentContent(''); // Clear main comment input
       }
       // Re-fetch comments to update the list
-      const response = await ProductService.readProductComments(parseInt(productId));
+      const response = await ProductService.readProductComments(numericProductId);
       setComments(response.data);
       setFeedback({ open: true, message: 'Comment posted successfully!', severity: 'success' });
     } catch (err) {
@@ -268,15 +271,15 @@ const ProductDetailPage = () => {
   };
 
   const handleSaveEditedComment = async (commentId: number) => {
-    if (!productId || !editingCommentContent.trim()) return;
+    if (!numericProductId || !editingCommentContent.trim()) return;
 
     setCommentLoading(true);
     try {
-      await ProductService.updateProductComment(parseInt(productId), commentId, { content: editingCommentContent.trim() });
+      await ProductService.updateProductComment(numericProductId, commentId, { content: editingCommentContent.trim() });
       setEditingCommentId(null);
       setEditingCommentContent('');
       // Re-fetch comments to update the list
-      const response = await ProductService.readProductComments(parseInt(productId));
+      const response = await ProductService.readProductComments(numericProductId);
       setComments(response.data);
       setFeedback({ open: true, message: 'Comment updated successfully!', severity: 'success' });
     } catch (err) {
@@ -289,13 +292,13 @@ const ProductDetailPage = () => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (!productId) return;
+    if (!numericProductId) return;
 
     setCommentLoading(true);
     try {
-      await ProductService.deleteProductComment(parseInt(productId), commentId);
+      await ProductService.deleteProductComment(numericProductId, commentId);
       // Re-fetch comments to update the list
-      const response = await ProductService.readProductComments(parseInt(productId));
+      const response = await ProductService.readProductComments(numericProductId);
       setComments(response.data);
       setFeedback({ open: true, message: 'Comment deleted successfully!', severity: 'success' });
     } catch (err) {
@@ -593,7 +596,7 @@ const ProductDetailPage = () => {
                 key={comment.id}
                 comment={comment}
                 level={0}
-                productId={productId ?? ''}
+                productId={numericProductId ? String(numericProductId) : ''}
                 isLoggedIn={isLoggedIn}
                 user={user}
                 editingCommentId={editingCommentId}
@@ -649,7 +652,7 @@ const ProductDetailPage = () => {
         </Box>
       </Box>
 
-      {productId && <ProductRecommendation productId={parseInt(productId)} />}
+      {numericProductId && <ProductRecommendation productId={numericProductId} />}
       {feedback && (
         <Snackbar
           open={feedback.open}
