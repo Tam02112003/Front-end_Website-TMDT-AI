@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography, Drawer, List, ListItemText, ListItemIcon, CircularProgress, Snackbar, Alert, ListItemButton } from '@mui/material';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined, TrendingUpOutlined, CloudUploadOutlined } from '@mui/icons-material';
+import { ShoppingCartOutlined, PeopleOutlined, ArticleOutlined, CategoryOutlined, ModelTrainingOutlined, DiscountOutlined, ImageOutlined, BrandingWatermarkOutlined, DeleteSweepOutlined, KeyboardAltOutlined, TrendingUpOutlined, CloudUploadOutlined, CampaignOutlined } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import AdminService from '../services/AdminService';
 import { colors } from '../theme';
@@ -27,6 +27,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const [clearingCache, setClearingCache] = useState(false);
   const [backingUp, setBackingUp] = useState(false);
+  const [sendingPromo, setSendingPromo] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
 
   const handleLogout = () => {
@@ -55,6 +56,17 @@ const AdminLayout = () => {
       setSnackbar({ open: true, message: error.response?.data?.detail || 'Sao lưu thất bại.', severity: 'error' });
     }
     setBackingUp(false);
+  };
+
+  const handleSendPromo = async () => {
+    setSendingPromo(true);
+    try {
+      const { data } = await AdminService.sendPromoCampaign();
+      setSnackbar({ open: true, message: `Đã gửi email khuyến mãi tới ${data.sent}/${data.recipients} người nhận.`, severity: 'success' });
+    } catch (error: any) {
+      setSnackbar({ open: true, message: error.response?.data?.detail || 'Gửi email khuyến mãi thất bại.', severity: 'error' });
+    }
+    setSendingPromo(false);
   };
 
   useEffect(() => {
@@ -132,6 +144,12 @@ const AdminLayout = () => {
                 {backingUp ? <CircularProgress size={20} sx={{ color: colors.jade }} /> : <CloudUploadOutlined fontSize="small" />}
               </ListItemIcon>
               <ListItemText primary="Sao lưu ngay" primaryTypographyProps={{ fontSize: '0.9rem' }} />
+            </ListItemButton>
+            <ListItemButton onClick={handleSendPromo} disabled={sendingPromo} sx={{ borderRadius: 1, mt: 1, color: colors.camel, '&:hover': { bgcolor: 'rgba(201,162,90,0.08)' } }}>
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
+                {sendingPromo ? <CircularProgress size={20} sx={{ color: colors.camel }} /> : <CampaignOutlined fontSize="small" />}
+              </ListItemIcon>
+              <ListItemText primary="Gửi email khuyến mãi" primaryTypographyProps={{ fontSize: '0.9rem' }} />
             </ListItemButton>
             <ListItemButton onClick={handleClearCache} disabled={clearingCache} sx={{ borderRadius: 1, mt: 1, color: colors.danger, '&:hover': { bgcolor: 'rgba(226,105,91,0.08)' } }}>
               <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
