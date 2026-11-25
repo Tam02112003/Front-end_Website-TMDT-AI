@@ -28,6 +28,7 @@ import NewsPage from './pages/NewsPage';
 import NewsDetailPage from './pages/NewsDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminImageGalleryPage from './pages/AdminImageGalleryPage';
+import AdminMarketingPage from './pages/AdminMarketingPage';
 
 import OrderResultPage from './pages/OrderResultPage';
 
@@ -66,6 +67,7 @@ function App() {
           <Route path="recommendations" element={<AdminRecommendationPage />} />
           <Route path="discounts" element={<AdminDiscountPage />} />
           <Route path="images" element={<AdminImageGalleryPage />} />
+          <Route path="marketing" element={<AdminMarketingPage />} />
         </Route>
       </Routes>
     </ThemeProvider>

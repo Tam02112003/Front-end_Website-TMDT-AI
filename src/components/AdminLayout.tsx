@@ -18,6 +18,7 @@ const navItems = [
   { to: '/admin/categories', label: 'Danh mục', icon: CategoryOutlined },
   { to: '/admin/recommendations', label: 'Gợi ý AI', icon: ModelTrainingOutlined },
   { to: '/admin/discounts', label: 'Khuyến mãi', icon: DiscountOutlined },
+  { to: '/admin/marketing', label: 'Email khuyến mãi', icon: CampaignOutlined },
   { to: '/admin/images', label: 'Thư viện ảnh', icon: ImageOutlined },
 ];
 
@@ -27,7 +28,6 @@ const AdminLayout = () => {
   const location = useLocation();
   const [clearingCache, setClearingCache] = useState(false);
   const [backingUp, setBackingUp] = useState(false);
-  const [sendingPromo, setSendingPromo] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
 
   const handleLogout = () => {
@@ -56,17 +56,6 @@ const AdminLayout = () => {
       setSnackbar({ open: true, message: error.response?.data?.detail || 'Sao lưu thất bại.', severity: 'error' });
     }
     setBackingUp(false);
-  };
-
-  const handleSendPromo = async () => {
-    setSendingPromo(true);
-    try {
-      const { data } = await AdminService.sendPromoCampaign();
-      setSnackbar({ open: true, message: `Đã gửi email khuyến mãi tới ${data.sent}/${data.recipients} người nhận.`, severity: 'success' });
-    } catch (error: any) {
-      setSnackbar({ open: true, message: error.response?.data?.detail || 'Gửi email khuyến mãi thất bại.', severity: 'error' });
-    }
-    setSendingPromo(false);
   };
 
   useEffect(() => {
@@ -144,12 +133,6 @@ const AdminLayout = () => {
                 {backingUp ? <CircularProgress size={20} sx={{ color: colors.jade }} /> : <CloudUploadOutlined fontSize="small" />}
               </ListItemIcon>
               <ListItemText primary="Sao lưu ngay" primaryTypographyProps={{ fontSize: '0.9rem' }} />
-            </ListItemButton>
-            <ListItemButton onClick={handleSendPromo} disabled={sendingPromo} sx={{ borderRadius: 1, mt: 1, color: colors.camel, '&:hover': { bgcolor: 'rgba(201,162,90,0.08)' } }}>
-              <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
-                {sendingPromo ? <CircularProgress size={20} sx={{ color: colors.camel }} /> : <CampaignOutlined fontSize="small" />}
-              </ListItemIcon>
-              <ListItemText primary="Gửi email khuyến mãi" primaryTypographyProps={{ fontSize: '0.9rem' }} />
             </ListItemButton>
             <ListItemButton onClick={handleClearCache} disabled={clearingCache} sx={{ borderRadius: 1, mt: 1, color: colors.danger, '&:hover': { bgcolor: 'rgba(226,105,91,0.08)' } }}>
               <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>

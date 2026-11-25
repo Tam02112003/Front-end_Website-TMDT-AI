@@ -13,6 +13,21 @@ interface PromoCampaignResult {
   failed: number;
 }
 
+export interface PromoCampaignProductItem {
+  id: number;
+  name: string;
+  slug?: string;
+  image_url: string;
+}
+
+export interface PromoCampaignPreview {
+  hero_url: string;
+  title: string;
+  subtitle: string;
+  max_discount?: number;
+  products: PromoCampaignProductItem[];
+}
+
 const AdminService = {
   clearRedisCache: () => {
     return api.post('/admin/clear-redis-cache');
@@ -20,8 +35,17 @@ const AdminService = {
   createBackup: () => {
     return api.post<BackupResult>('/admin/backup');
   },
-  sendPromoCampaign: () => {
-    return api.post<PromoCampaignResult>('/admin/marketing/send-promo');
+  previewPromoCampaign: (title: string, subtitle: string, productIds: number[]) => {
+    return api.post<PromoCampaignPreview>('/admin/marketing/promo/preview', { title, subtitle, product_ids: productIds });
+  },
+  sendPromoCampaign: (preview: PromoCampaignPreview) => {
+    return api.post<PromoCampaignResult>('/admin/marketing/promo/send', {
+      title: preview.title,
+      subtitle: preview.subtitle,
+      hero_url: preview.hero_url,
+      max_discount: preview.max_discount,
+      products: preview.products,
+    });
   },
 };
 
